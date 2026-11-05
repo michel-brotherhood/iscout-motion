@@ -156,3 +156,21 @@ Logo: **lockup oficial "iSCOUT by FYRECOM™" mantido como está** (decisão do 
 - Completo: Magnific **Precision**, força 35 (baixa, para não reinventar detalhe), sharpen 10, grain 5, sem interpolação de frames: 2.297 cr.
 - Saída 1932×1078, 121 frames (idêntico ao original). Proporção preservada (1,791 → 1,792); sem deformação de corpo, bola ou rosto na comparação quadro a quadro.
 - Master `S1_dominio_1080p.mp4`: escala proporcional para 1936 px + recorte central de 8 px por lado → **1920×1080, SAR 1:1**, sem áudio, 24 fps (conversão para 30 fps só na montagem).
+
+## 10. S1 no animatic + orçamento dos planos restantes
+
+**S1 inserido** (`render.py` lê `$SRC/s1/`, extraído de `S1_dominio_1080p.mp4` a partir de 0,25 s, 30 fps). Título subiu para o topo (a bola ocupa o terço inferior). No 9:16 o recorte acompanha o atleta (fx 0,50 → 0,30); a bola sai do quadro no último segundo — aceitável, mas justifica um 9:16 nativo se o vertical for prioridade.
+
+**Orçamento** (Magnific `simulate_cost`; geração Seedance 2.5 480p → upscale Precision 1080p; 2 takes por plano; keyframe Nano Banana 2.1 ≈65 cr/img):
+
+| Plano | Uso no filme | Geração | Upscale | Keyframes | Total |
+|---|---|---|---|---|---|
+| S2 · plano aberto, mesmo atleta | 4 s tela cheia | 2 × 5 s = 2.000 | 2.297 | 130 | **4.427** |
+| S4-A · momento treino (entardecer) | painel ~43% da largura | 2 × 4 s = 1.600 | — (480p basta no painel) | 130 | **1.730** |
+| S4-B · momento jogo (noite) | painel ~43% | 2 × 4 s = 1.600 | — | 130 | **1.730** |
+| S5a · treinador com tablet (tela de costas) | 1,2 s nítido + fundo desfocado | 2 × 4 s = 1.600 | 1.897 | 130 + 130 (folha do treinador) | **3.757** |
+| S5b · retomada do treino (apito) | 3 s tela cheia | 2 × 4 s = 1.600 | 1.897 | 130 | **3.627** |
+| **Subtotal recomendado** | | | | | **≈15.271** |
+| Opcional · S1 nativo 9:16 | vertical | 2 × 5 s = 2.000 | 2.297 | 130 | 4.427 |
+
+Saldo atual 33.661 → ~18.390 após o recomendado (~13.960 com o 9:16). Upscales são estimados (24 fps); geração é valor exato. Economia possível: 1 take por plano (−4.200), com risco de refazer.

@@ -134,17 +134,18 @@ def tag(d, xy, s, size, color=LIME, alpha=1.0, anchor="la"):
 
 # ---------- cenas ----------
 def s1_jogada(f, W, H, V):
-    # PLACEHOLDER: plano IA de domínio + mudança de direção. Push-in rente ao gramado.
+    # Plano IA aprovado (Seedance 2.5 R2-A, upscale 1080p): domínio + mudança de direção.
     t = f / 119
-    bg = cover(img("references/soccer-training-hero.jpg"), W, H, lerp(1.25, 1.55, inout(t)),
-               0.44 if not V else 0.42, 0.72)
-    bg = darken(bg, 0.15)
+    fx = 0.5 if not V else lerp(0.5, 0.3, inout(prog(f, 40, 119)))   # no 9:16 acompanha o atleta
+    bg = cover(clip("s1", f), W, H, lerp(1.0, 1.08, inout(t)), fx, 0.6)
+    bg = darken(bg, 0.08)
     # whip-zoom de saída motivado pela bola (f 108-119)
     if f > 108:
         k = prog(f, 108, 119); bg = bg.filter(ImageFilter.GaussianBlur(k * 6))
+    # título no alto: a bola e os pés ocupam o terço inferior
     headline(bg, "O talento acontece em campo.", W, H, prog(f, 18, 34) * (1 - prog(f, 104, 116)), V,
-             y=(None if not V else 0.22 * H))
-    return bg, "PLACEHOLDER · plano IA: domínio + mudança de direção"
+             y=(0.14 * H if not V else 0.16 * H))
+    return bg, "S1 · Seedance 2.5 R2-A (upscale Precision 1080p)"
 
 PATH_H = [(0.30, 0.86), (0.38, 0.80), (0.46, 0.79), (0.52, 0.76), (0.57, 0.70), (0.64, 0.67)]
 
