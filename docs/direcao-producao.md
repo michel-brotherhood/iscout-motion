@@ -134,3 +134,25 @@ Executado no Magnific. **Custo real: 3.040 créditos** (saldo 41.655 → 38.615)
 Critérios: texto/escudos ✅ todos; anatomia ✅ sem membros extras; consistência de personagem ✅; **contato pé-bola: parcial** em todos.
 
 **Decisão recomendada:** Seedance 2.5 como motor. Montar S1 em **dois planos com corte na ação** (B: toque em close → A: giro e arrancada), o que esconde a fragilidade do contato. Próxima rodada (~2.000 cr): Seedance 2.5 com **quadro inicial travado** e bola entrando em movimento ("ball rolls in from the right"), depois finalizar o escolhido em 1080p (~3.950 cr por 5 s).
+
+## 9. Rodada 2 + trilha (05/11/2026)
+
+Custo real: **2.160 créditos** (saldo 38.615 → 36.455).
+
+| Item | Configuração | Resultado |
+|---|---|---|
+| R2-A Seedance 2.5 | 480p, 5 s, quadro inicial travado (T0b início) | ✅ **Aprovado para S1.** A bola acompanha o atleta durante o domínio e o giro; mudança de direção clara; identidade e uniforme estáveis; sem texto. A bola não "entra rolando" (começa no pé). |
+| R2-B Seedance 2.5 | 480p, 5 s, início + fim travados | ⚠️ Condução de frente para a câmera; giro pouco decisivo. Reserva. |
+| Trilha A (Lyria 3) | 30 s, instrumental | Pausa em 16–18 s, mas segue cheia até o fim — sem hit de marca. |
+| Trilha B (Lyria 3) | 30 s, instrumental | ✅ **Escolhida.** Pulso desde o início, respiro em 18,5 s, **retorno com impacto em 25 s** (entrada da marca) e cauda até 30 s. O vazio 19–24 s vira espaço para ambiente de treino + apito (S5). |
+
+Logo: **lockup oficial "iSCOUT by FYRECOM™" mantido como está** (decisão do cliente).
+
+**Próximo passo:** upscale do R2-A para 1080p via Magnific Precision (**≈2.297 cr**, estimado) ou nova geração em 1080p (≈3.950 cr, take diferente — Seedance 2.5 não tem seed). Recomendado: upscale, preserva o take aprovado.
+
+### Upscale do S1 (R2-A)
+
+- Preview (12 frames) para validar fidelidade antes do completo: 497 cr.
+- Completo: Magnific **Precision**, força 35 (baixa, para não reinventar detalhe), sharpen 10, grain 5, sem interpolação de frames: 2.297 cr.
+- Saída 1932×1078, 121 frames (idêntico ao original). Proporção preservada (1,791 → 1,792); sem deformação de corpo, bola ou rosto na comparação quadro a quadro.
+- Master `S1_dominio_1080p.mp4`: escala proporcional para 1936 px + recorte central de 8 px por lado → **1920×1080, SAR 1:1**, sem áudio, 24 fps (conversão para 30 fps só na montagem).
