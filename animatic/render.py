@@ -106,6 +106,28 @@ def card(base, im, box, radius, border=None, bw=2, alpha=1.0):
     if border:
         d = ImageDraw.Draw(base); d.rounded_rectangle([x, y, x+w-1, y+h-1], radius, outline=border + (int(255*alpha),), width=bw)
 
+@lru_cache(8)
+def screen(name):
+    """Tela do app com números já desfocados (gerada por prep_screens.py)."""
+    return Image.open(os.path.join(SRC, "screens", name)).convert("RGBA")
+
+def phone(base, name, cx, cy, ph, scroll=0.0, alpha=1.0):
+    """Moldura de celular com a tela rolada; scroll 0..1 do conteúdo além da janela."""
+    if alpha <= 0: return
+    pw = ph * 9 / 19.5; bez = ph * 0.018; r = int(ph * 0.06)
+    x0, y0 = cx - pw / 2, cy - ph / 2
+    sh = Image.new("RGBA", base.size, (0, 0, 0, 0))
+    ImageDraw.Draw(sh).rounded_rectangle([x0, y0 + ph * 0.02, x0 + pw, y0 + ph * 1.02], r, fill=(0, 0, 0, int(160 * alpha)))
+    base.alpha_composite(sh.filter(ImageFilter.GaussianBlur(ph * 0.03)))
+    d = ImageDraw.Draw(base)
+    d.rounded_rectangle([x0, y0, x0 + pw, y0 + ph], r, fill=(18, 22, 40, int(255 * alpha)), outline=(90, 100, 130, int(255 * alpha)), width=2)
+    iw, ih = int(pw - 2 * bez), int(ph - 2 * bez)
+    sc = screen(name); k = iw / sc.width
+    vis_h = ih / k; top = clamp(scroll) * max(0, sc.height - vis_h)
+    tile = sc.crop((0, int(top), sc.width, int(top + vis_h))).resize((iw, ih), Image.LANCZOS)
+    m = Image.new("L", (iw, ih), 0); ImageDraw.Draw(m).rounded_rectangle([0, 0, iw - 1, ih - 1], int(r * 0.8), fill=int(255 * alpha))
+    base.paste(tile, (int(x0 + bez), int(y0 + bez)), m)
+
 def tag(d, xy, s, size, color=LIME, alpha=1.0, anchor="la"):
     text(d, xy, s.upper(), size, fill=color, alpha=alpha, anchor=anchor)
 
@@ -190,9 +212,17 @@ def s3_registro(f, W, H, V):
     d = ImageDraw.Draw(base)
     if k > 0.6 and not V:
         tag(d, (main_box[0] + main_box[2] / 2, ly + H * 0.03), "Jogo", int(H * (0.022 if not V else 0.014)), LIME, prog(l, 25, 35), "ma")
+    # os registros "pousam" na galeria real do app
+    ga = ease(prog(l, 84, 104))
+    if ga > 0:
+        if V:
+            base.alpha_composite(Image.new("RGBA", base.size, NAVY + (int(200 * ga),)))
+            phone(base, "4.2.2-galeria-videos.png", W / 2, H * 0.42 + (1 - ga) * H * 0.1, H * 0.6, 0.15 * prog(l, 100, 149), ga)
+        else:
+            phone(base, "4.2.2-galeria-videos.png", W * 0.80, H * 0.40 + (1 - ga) * H * 0.1, H * 0.64, 0.15 * prog(l, 100, 149), ga)
     headline(base, "Jogos e treinos. Uma história organizada.", W, H, prog(l, 38, 54) * (1 - prog(l, 136, 149)), V,
              y=(0.80 * H if not V else 0.80 * H))
-    return base, "registros: posters/refs existentes (provisório) · linha do tempo código"
+    return base, "registros: posters/refs (provisório) · galeria 4.2.2 (números desfocados)"
 
 def s4_evolucao(f, W, H, V):
     l = f - 390
@@ -214,36 +244,29 @@ def s4_evolucao(f, W, H, V):
             tr = ease(prog(l, 20 + i * 6, 60 + i * 6))
             col = (LIME if i else CYAN) + (int(255 * a),)
             glow_layer(base, lambda dd: (polyline(dd, pts, col, max(3, int(H * 0.005)), tr), ring(dd, p2, H * 0.015, col, 2) if tr > .98 else None), H * 0.006)
-    # perfil: registros organizados (sem números, sem nome real)
-    pa = ease(prog(l, 100, 125))
+    # perfil real do app (4.2.0), rolando até "Evolução na temporada"
+    pa = ease(prog(l, 100, 122))
     if pa > 0:
-        d = ImageDraw.Draw(base)
-        pw, ph = ((W * 0.42, H * 0.56) if not V else (W * 0.84, H * 0.4))
-        px, py = W / 2 - pw / 2, (H * 0.13 if not V else H * 0.22) + (1 - pa) * 40
-        d.rounded_rectangle([px, py, px + pw, py + ph], int(H * 0.02), fill=BLUE + (int(235 * pa),), outline=CYAN + (int(255 * pa),), width=2)
-        r = ph * 0.11; cx = px + pw * 0.14; cy = py + ph * 0.16
-        d.ellipse([cx - r, cy - r, cx + r, cy + r], fill=NAVY + (int(255 * pa),), outline=LIME + (int(255 * pa),), width=3)
-        text(d, (cx + r * 1.6, cy - r * 0.55), "Perfil do atleta", int(ph * 0.065), alpha=pa)
-        tag(d, (cx + r * 1.6, cy + r * 0.35), "Registros organizados", int(ph * 0.04), CYAN, pa)
-        rows = [("Jogo", LIME), ("Treino", CYAN), ("Jogo", LIME), ("Treino", CYAN)]
-        for i, (lab, c) in enumerate(rows):
-            ra = ease(prog(l, 112 + i * 7, 128 + i * 7))
-            y = py + ph * (0.36 + i * 0.15)
-            card(base, img(CARDS[i][0]), (px + pw * 0.08, y, pw * 0.2, ph * 0.12), 6, None, 0, ra)
-            d = ImageDraw.Draw(base)
-            tag(d, (px + pw * 0.33, y + ph * 0.035), lab, int(ph * 0.045), c, ra)
-            d.rounded_rectangle([px + pw * 0.33, y + ph * 0.085, px + pw * (0.5 + 0.08 * i), y + ph * 0.095], 3, fill=WHITE + (int(70 * ra),))
+        if V: phone(base, "4.2.0-perfil-atleta.png", W / 2, H * 0.40 + (1 - pa) * 40, H * 0.6, 0.28 * inout(prog(l, 118, 170)), pa)
+        else: phone(base, "4.2.0-perfil-atleta.png", W / 2, H * 0.43 + (1 - pa) * 40, H * 0.74, 0.28 * inout(prog(l, 118, 170)), pa)
     headline(base, "Mais contexto para entender.", W, H, prog(l, 10, 24) * (1 - prog(l, 80, 92)), V, y=(0.82 * H if not V else 0.80 * H))
     headline(base, "Mais clareza para desenvolver.", W, H, prog(l, 104, 118) * (1 - prog(l, 168, 179)), V, y=(0.86 * H if not V else 0.80 * H))
-    return base, "comparação/perfil: placeholders (gerar 2 momentos do MESMO atleta)"
+    return base, "comparação: placeholders (gerar 2 momentos do MESMO atleta) · perfil 4.2.0"
 
 def s5_decisao(f, W, H, V):
     l = f - 570
     if l < 95:
         bg = cover(clip("mock-coach-tablet", 10 + l), W, H, 1.05 + l * 0.0008, 0.45 if not V else 0.42, 0.5)
         bg = darken(bg, 0.1)
+        # insert: o que o treinador consulta — player com lances e comentários (4.2.9)
+        ia = ease(prog(l, 34, 50))
+        if ia > 0:
+            bg = Image.blend(bg, darken(bg.filter(ImageFilter.GaussianBlur(H * 0.012)), 0.35), ia)
+            sc = 0.45 + 0.55 * inout(prog(l, 50, 92))
+            if V: phone(bg, "4.2.9-player-video.png", W / 2, H * 0.58 + (1 - ia) * 60, H * 0.62, sc, ia)
+            else: phone(bg, "4.2.9-player-video.png", W * 0.70, H * 0.55 + (1 - ia) * 60, H * 0.78, sc, ia)
         headline(bg, "Inteligência para desenvolver.", W, H, prog(l, 10, 24) * (1 - prog(l, 82, 94)), V, y=(0.16 * H if not V else 0.2 * H))
-        note = "mock-coach-tablet (UI c/ números genéricos → substituir por tela código)"
+        note = "mock-coach-tablet (tela do tablet a cobrir) · insert player 4.2.9"
     else:
         k = l - 95
         bg = cover(clip("v2-panorama-sm", 400 + k), W, H, lerp(1.35, 1.2, k / 85), 0.5, 0.6)
