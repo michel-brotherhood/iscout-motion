@@ -174,3 +174,19 @@ Logo: **lockup oficial "iSCOUT by FYRECOM™" mantido como está** (decisão do 
 | Opcional · S1 nativo 9:16 | vertical | 2 × 5 s = 2.000 | 2.297 | 130 | 4.427 |
 
 Saldo atual 33.661 → ~18.390 após o recomendado (~13.960 com o 9:16). Upscales são estimados (24 fps); geração é valor exato. Economia possível: 1 take por plano (−4.200), com risco de refazer.
+
+## 11. Decisão: proposta enxuta + teto de créditos
+
+**Teto aprovado: 3.000 créditos para o restante do projeto.** Acima disso, só com aprovação explícita. Sem previews pagos. Gasto acumulado até aqui: 7.994 cr (saldo 33.661).
+
+O orçamento da §10 (≈15.271 cr) foi **descartado**. Plano enxuto, custo zero:
+
+| Cena | Fonte |
+|---|---|
+| S1 | Plano aprovado (R2-A, 1080p) |
+| S2 | `v2-panorama-sm` com upscale local na montagem |
+| S3 | Cards com quadros dos takes do próprio atleta (T2-A, Kling A, R2-B, T2-B) — **remove a referência com uniforme de terceiros** |
+| S4 | Momento A = T2-B (close), Momento B = R2-B (aberto): mesmo atleta, takes já pagos |
+| S5a / S5b | `mock-coach-tablet` (tela coberta pelo insert do app) / trecho final do `v2-panorama-sm` |
+
+Opcional dentro do teto: 1 plano novo do treinador sem upscale (~800–1.000 cr), só se o existente não convencer.

@@ -171,9 +171,10 @@ def s2_olhar(f, W, H, V):
              y=(0.18 * H if not V else 0.2 * H))
     return bg, "v2-panorama-sm (upscale) + trajetória código"
 
-CARDS = [("footage/v2-panorama-poster.webp", "Jogo"), ("references/youth-soccer-academy.jpg", "Treino"),
-         ("references/soccer-training-hero.jpg", "Jogo"), ("footage/mock-family-app-poster.webp", "Treino"),
-         ("interfaces/tablet-field.webp", "Jogo")]
+# registros: quadros do mesmo atleta (takes já gerados) — sem refs de terceiros
+STILL = lambda n: os.path.join(SRC, "stills", n + ".jpg")
+CARDS = [(STILL("t2a"), "Treino"), (STILL("k1"), "Jogo"), (STILL("r2b"), "Treino"),
+         (STILL("t2b"), "Jogo"), ("footage/v2-panorama-poster.webp", "Jogo")]
 
 def s3_registro(f, W, H, V):
     l = f - 240
@@ -223,7 +224,7 @@ def s3_registro(f, W, H, V):
             phone(base, "4.2.2-galeria-videos.png", W * 0.80, H * 0.40 + (1 - ga) * H * 0.1, H * 0.64, 0.15 * prog(l, 100, 149), ga)
     headline(base, "Jogos e treinos. Uma história organizada.", W, H, prog(l, 38, 54) * (1 - prog(l, 136, 149)), V,
              y=(0.80 * H if not V else 0.80 * H))
-    return base, "registros: posters/refs (provisório) · galeria 4.2.2 (números desfocados)"
+    return base, "registros: quadros dos takes do atleta · galeria 4.2.2 (números desfocados)"
 
 def s4_evolucao(f, W, H, V):
     l = f - 390
@@ -235,7 +236,8 @@ def s4_evolucao(f, W, H, V):
         boxes = ([(W * 0.05, H * 0.17), (W * 0.52, H * 0.17)] if not V else [(W * 0.08, H * 0.18), (W * 0.08, H * 0.48)])
         for i, (bx, by) in enumerate(boxes):
             a = ease(prog(l, i * 8, 18 + i * 8)) * split
-            card(base, img("references/soccer-training-hero.jpg") if i == 0 else img("references/youth-soccer-academy.jpg"),
+            # dois momentos do MESMO atleta: takes de teste reaproveitados (custo zero)
+            card(base, clip("t2_seedance_b", 20 + l) if i == 0 else clip("r2_seedance_b", 30 + l),
                  (bx, by, pw, ph), int(H * 0.012), LIME if i else CYAN, 3, a)
             d = ImageDraw.Draw(base)
             tag(d, (bx + 14, by - H * 0.035), ("Momento A · Treino" if i == 0 else "Momento B · Jogo"), int(H * (0.024 if not V else 0.014)), LIME if i else CYAN, a)
@@ -252,7 +254,7 @@ def s4_evolucao(f, W, H, V):
         else: phone(base, "4.2.0-perfil-atleta.png", W / 2, H * 0.43 + (1 - pa) * 40, H * 0.74, 0.28 * inout(prog(l, 118, 170)), pa)
     headline(base, "Mais contexto para entender.", W, H, prog(l, 10, 24) * (1 - prog(l, 80, 92)), V, y=(0.82 * H if not V else 0.80 * H))
     headline(base, "Mais clareza para desenvolver.", W, H, prog(l, 104, 118) * (1 - prog(l, 168, 179)), V, y=(0.86 * H if not V else 0.80 * H))
-    return base, "comparação: placeholders (gerar 2 momentos do MESMO atleta) · perfil 4.2.0"
+    return base, "comparação: takes reaproveitados (mesmo atleta) · perfil 4.2.0"
 
 def s5_decisao(f, W, H, V):
     l = f - 570
