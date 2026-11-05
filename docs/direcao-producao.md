@@ -105,3 +105,15 @@ Em seguida, 9:16 nativo do plano aprovado (mesmo custo unitário).
 - `animatic/render.py`: gerador (Python/PIL + ffmpeg). Variáveis `SRC` (frames de footage) e `FONTDIR` (Sora em TTF estático).
 - `animatic/out/animatic_16x9.mp4` (960×540) e `animatic_9x16.mp4` (540×960): 30 fps, 900 frames, sem áudio, com HUD de revisão (cena, timecode, cue de áudio, origem do asset).
 - `animatic/out/styleframes/`: `sf1_abertura`, `sf2_evolucao`, `sf3_assinatura` em `_h` (1920×1080) e `_v` (1080×1920).
+
+## 7. Telas novas do app (redesign) — encaixe proposto
+
+Fonte: `assets/interfaces/redesign/` (também em `iscout-telas-novas/`; a pasta da raiz tem 12 arquivos a mais em 05 e 06). Telas de **produto real em redesign**, com **dados de demonstração** (nomes, km/h, notas). Confirmam visualmente: galeria de vídeos com etiquetas Jogo/Treino, perfil do atleta, evolução, agenda, player com lances marcados e comentários do treinador, área do clube.
+
+| Cena | Tela | Uso |
+|---|---|---|
+| S3 · O registro | `4.2.2-galeria-videos` | Os cards da linha do tempo "pousam" na galeria real (Jogo/Treino). |
+| S4 · A evolução | `4.2.9-player-video` (marcadores de lance) → `4.2.0-perfil-atleta` | Comparação sai do player; perfil organizado fecha a cena. |
+| S5 · A decisão humana | `C3.0-perfil-atleta-clube` ou comentários do treinador em `4.2.9` | Tela consultada pelo treinador (substitui a UI genérica do `mock-coach-tablet`). |
+
+Regras: exibir em moldura de celular, recortes ampliados (≥ 60% da altura em 9:16), sem ler números como promessa; números de demonstração **desfocados ou neutralizados** até aprovação; manter o disclaimer "interfaces ilustrativas". Não usar telas de pagamento, termos, PIN ou marketplace (ruído e dado sensível).
