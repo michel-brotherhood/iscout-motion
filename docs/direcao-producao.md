@@ -149,3 +149,10 @@ Custo real: **2.160 créditos** (saldo 38.615 → 36.455).
 Logo: **lockup oficial "iSCOUT by FYRECOM™" mantido como está** (decisão do cliente).
 
 **Próximo passo:** upscale do R2-A para 1080p via Magnific Precision (**≈2.297 cr**, estimado) ou nova geração em 1080p (≈3.950 cr, take diferente — Seedance 2.5 não tem seed). Recomendado: upscale, preserva o take aprovado.
+
+### Upscale do S1 (R2-A)
+
+- Preview (12 frames) para validar fidelidade antes do completo: 497 cr.
+- Completo: Magnific **Precision**, força 35 (baixa, para não reinventar detalhe), sharpen 10, grain 5, sem interpolação de frames: 2.297 cr.
+- Saída 1932×1078, 121 frames (idêntico ao original). Proporção preservada (1,791 → 1,792); sem deformação de corpo, bola ou rosto na comparação quadro a quadro.
+- Master `S1_dominio_1080p.mp4`: escala proporcional para 1936 px + recorte central de 8 px por lado → **1920×1080, SAR 1:1**, sem áudio, 24 fps (conversão para 30 fps só na montagem).
