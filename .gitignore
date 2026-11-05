@@ -26,3 +26,4 @@ coverage/
 *.log
 renders/temp/
 animatic/out/
+__pycache__/
