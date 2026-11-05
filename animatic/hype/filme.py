@@ -11,7 +11,6 @@ from fx import (W, H, FPS, WA, frames, bw, duo, glitch, electric, glow_draw, tit
 PORT = os.environ["PORT"]
 A = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "assets")
 LIME = (205, 213, 92)
-TOTAL = 720
 YW = 100            # recorte vertical dos clipes (mantém a legenda/marca d'água fora do 2.39:1)
 
 def img_frames(name, dur):
@@ -40,30 +39,44 @@ def energy_edges(im, t, seed):
 
 # (duração s, fonte, gradação, opções)
 EDL = [
+    # ATO 1 · SOMBRA (P&B)
     (1.6, ("img", "p4.png"), "bw", dict(push=.08, flick=True, txt=("O TALENTO", 150, .86, False), edges=True)),
     (0.6, ("vid", "wa3.mp4", 4.6, 0.6), "bw", dict(gl=4)),
     (1.2, ("img", "p3.png"), "bw", dict(push=.05, txt=("ACONTECE EM CAMPO", 110, .86, False), edges=True)),
     (0.15, "flash", None, {}),
-    (1.05, ("vid", "wa1.mp4", 0.3, 1.05), "bw2duo", dict(push=.04)),
-    (1.4, ("vid", "wa1.mp4", 3.0, 1.4), "duo", dict(txt=("CADA JOGADA", 150, .80, True))),
-    (1.2, ("vid", "wa5.mp4", 3.2, 1.2), "duo", dict(gl=3, txt=("CONTA.", 170, .80, False, LIME))),
-    (1.0, ("vid", "wa3.mp4", 4.0, 1.0), "duo", dict(gl=3)),
+    # ATO 2 · CAPTURA (cor natural, HUD de gravação) — "Se grava, a iSCOUT transforma em dado."
+    (0.8, "black", None, dict(txt=("SE GRAVA,", 170, .5, True))),
+    (1.6, ("img", "c1.png"), "nat", dict(push=.06, hud=True, txt=("CELULAR", 120, .86, False))),
+    (1.4, ("img", "c2.png"), "nat", dict(push=.06, hud=True, gl=3, txt=("CÂMERA DE AÇÃO", 110, .86, False))),
+    (1.6, ("img", "c3.png"), "nat", dict(push=.05, hud=True, gl=3, txt=("CÂMERA PROFISSIONAL", 100, .86, False))),
+    (1.0, "black", None, dict(txt=("VIRA DADO.", 190, .5, False, LIME))),
+    (1.8, ("scan", ("vid", "wa1.mp4", 3.0, 1.8)), "scan", dict(txt=("DO VÍDEO BRUTO À EVIDÊNCIA", 92, .86, False))),
+    (1.2, ("vid", "wa5.mp4", 3.2, 1.2), "duo", dict(gl=3)),
+    # ATO 3 · EVIDÊNCIA (verde iSCOUT)
+    (1.2, ("vid", "wa5.mp4", 0.2, 1.2), "duo", dict(push=.04)),
+    (1.4, ("vid", "wa1.mp4", 4.4, 1.4), "duo", dict(txt=("CADA JOGADA", 150, .80, True))),
+    (1.0, ("vid", "wa3.mp4", 4.0, 1.0), "duo", dict(gl=3, txt=("CONTA.", 170, .80, False, LIME))),
     (1.2, ("vid", "wa2.mp4", 0.3, 1.2), "duo", dict(push=.04)),
     (1.4, ("vid", "wa2.mp4", 3.0, 1.4), "duo", dict(txt=("UMA TRAJETÓRIA", 140, .80, True))),
-    (1.2, ("vid", "wa4.mp4", 2.0, 1.2), "duo", dict(crop=(1.35, .30, .22))),
     (1.2, ("vid", "wa2.mp4", 7.0, 1.2), "duo", dict(txt=("REVELA MAIS.", 160, .80, False, LIME))),
-    (1.2, ("vid", "wa6.mp4", 1.6, 1.2), "duo", dict(gl=3)),
+    (1.4, ("vid", "wa4.mp4", 2.0, 1.4), "duo", dict(crop=(1.35, .30, .22), txt=("DECISÃO HUMANA", 140, .80, True))),
+    (1.4, ("vid", "wa4.mp4", 4.0, 1.4), "duo", dict(crop=(1.35, .30, .22), txt=("COM EVIDÊNCIA.", 150, .80, False, LIME))),
+    (2.0, ("vid", "wa6.mp4", 1.6, 2.0), "duo", dict(gl=3, push=.05)),
     (0.15, "flash", None, dict(color=LIME)),
+    # ATO 4 · RETRATOS + CLÍMAX
     (2.05, ("img", "p1.png"), "duo", dict(push=.07, v=True, txt=("INTELIGÊNCIA PARA DESENVOLVER", 84, .90, False))),
     (0.2, ("vid", "wa3.mp4", 6.0, 0.2), "duo", dict(gl=2)),
-    (0.2, ("vid", "wa1.mp4", 5.0, 0.2), "duo", dict(gl=2)),
+    (0.2, ("img", "c1.png"), "duo", dict(gl=2, hud=True)),
     (0.2, ("vid", "wa5.mp4", 6.0, 0.2), "duo", dict(gl=2)),
-    (0.2, ("vid", "wa3.mp4", 4.3, 0.2), "duo", dict(gl=2)),
+    (0.2, ("img", "c2.png"), "duo", dict(gl=2, hud=True)),
     (0.8, "black", None, dict(txt=("VISIBILIDADE", 170, .5, True))),
     (2.0, ("img", "p2.png"), "duo", dict(push=.07, v=True, txt=("PARA DESCOBRIR.", 130, .88, False, LIME))),
+    (2.0, ("img", "p4.png"), "duo", dict(push=.06, edges=True)),
     (0.35, ("vid", "wa3.mp4", 4.5, 0.35), "duo", dict(gl=2)),
+    (0.35, ("img", "c3.png"), "duo", dict(gl=2, hud=True)),
     (0.35, ("vid", "wa1.mp4", 3.6, 0.35), "duo", dict(gl=2)),
     (0.35, ("vid", "wa5.mp4", 7.0, 0.35), "duo", dict(gl=2)),
+    (0.35, ("img", "c1.png"), "duo", dict(gl=2, hud=True)),
     (0.35, ("vid", "wa2.mp4", 3.8, 0.35), "duo", dict(gl=2)),
     (0.35, ("img", "p3.png"), "duo", dict(gl=2)),
     (0.35, ("vid", "wa6.mp4", 2.5, 0.35), "duo", dict(gl=2)),
@@ -71,6 +84,22 @@ EDL = [
     (0.35, ("img", "p1.png"), "duo", dict(gl=2)),
     (1.0, "converge", None, {}),
 ]
+
+def hud(im, i, seed):
+    """Interface de gravação desenhada por código: REC, timecode, cantoneiras."""
+    d = ImageDraw.Draw(im); m = 40; L = 70; c = (255, 255, 255, 220)
+    for x, y, sx, sy in ((m, m, 1, 1), (W - m, m, -1, 1), (m, H - m, 1, -1), (W - m, H - m, -1, -1)):
+        d.line([(x, y), (x + L * sx, y)], fill=c, width=5); d.line([(x, y), (x, y + L * sy)], fill=c, width=5)
+    if (i // 6) % 2 == 0: d.ellipse([m + 30, m + 28, m + 54, m + 52], fill=(230, 40, 40, 255))
+    d.text((m + 66, m + 40), "REC", font=font(34), anchor="lm", fill=c, stroke_width=3, stroke_fill=(0, 0, 0, 200))
+    fr = (seed * 13 + i) % (FPS * 60)
+    d.text((W - m - 30, m + 40), "00:%02d:%02d:%02d" % (fr // (FPS * 60), (fr // FPS) % 60, fr % FPS), font=font(30), anchor="rm", fill=c, stroke_width=3, stroke_fill=(0, 0, 0, 200))
+
+def nat(fr):
+    """Cor natural dessaturada: o mundo real antes de virar dado."""
+    return fr * 0.55 + bw(fr, 1.25, 0.05) * 0.45
+
+TOTAL = 1080   # 45 s
 
 def text_opt(im, o, i, n):
     if "txt" not in o: return
@@ -97,11 +126,18 @@ def render_shot(dur, source, grade, o, seed):
                                      electric(d, [(W, H * .5), (W * (1 - .5 * t), H * .5)], 1, 6, seed + i + 50)), 18, 4)
             out.append(im)
         return out
-    clip = (img_frames(source[1], dur) if source[0] == "img" else src(*source))[:n]
+    if source[0] == "scan":
+        clip = src(*source[1])[:n]
+    else:
+        clip = (img_frames(source[1], dur) if source[0] == "img" else src(*source))[:n]
     out = []
     for i, fr in enumerate(clip):
         if grade == "bw": a = bw(fr, 1.7, 0.1)
         elif grade == "duo": a = duo(fr)
+        elif grade == "nat": a = nat(fr)
+        elif grade == "scan":
+            # linha de varredura: à esquerda o vídeo bruto, à direita o dado (verde iSCOUT)
+            x = int(W * min(1, i / (n * .7))); a = nat(fr).copy(); a[:, :x] = duo(fr)[:, :x]
         else: k = min(1, i / max(1, n - 1)); a = bw(fr) * (1 - k) + duo(fr) * k
         if o.get("gl") and i < o["gl"]: a = glitch(a, 1 - i / o["gl"], seed + i)
         im = Image.fromarray(np.clip(a, 0, 255).astype(np.uint8)).convert("RGBA")
@@ -110,6 +146,10 @@ def render_shot(dur, source, grade, o, seed):
         if o.get("push"): im = zoom(im, 1 + o["push"] * i / n)
         if o.get("flick") and i % 7 in (0, 1) and i < n * .6:
             im = Image.blend(im, Image.new("RGBA", (W, H), (0, 0, 0, 255)), .55)
+        if grade == "scan":
+            x = int(W * min(1, i / (n * .7)))
+            glow_draw(im, lambda d: d.line([(x, 0), (x, H)], fill=LIME + (255,), width=4), 14, 3)
+        if o.get("hud"): hud(im, i, seed)
         if o.get("edges"): energy_edges(im, min(1, i / 8), seed + i)
         if o.get("v"): energy_v(im, min(1, i / 10), seed + i)
         text_opt(im, o, i, n)
@@ -161,7 +201,6 @@ if __name__ == "__main__":
     f = 0; seed = 1; rng = np.random.default_rng(3)
     def emit(im, ev=True):
         global f
-        if 5 * FPS <= f < 15 * FPS: disclaimer(im)
         a = np.asarray(im.convert("RGB")).astype(np.float32)
         a = a * VIG if ev else a
         a = a + rng.normal(0, 7, (H, W, 1)).astype(np.float32)
