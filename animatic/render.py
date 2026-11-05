@@ -145,7 +145,7 @@ def s1_jogada(f, W, H, V):
     # título no alto: a bola e os pés ocupam o terço inferior
     headline(bg, "O talento acontece em campo.", W, H, prog(f, 18, 34) * (1 - prog(f, 104, 116)), V,
              y=(0.14 * H if not V else 0.16 * H))
-    return bg, "S1 · Seedance 2.5 R2-A (upscale Precision 1080p)"
+    return bg, "S1 · R2-A 1080p + uniforme do clube (Kling 4.0 modify)"
 
 PATH_H = [(0.30, 0.86), (0.38, 0.80), (0.46, 0.79), (0.52, 0.76), (0.57, 0.70), (0.64, 0.67)]
 
@@ -237,7 +237,7 @@ def s4_evolucao(f, W, H, V):
         for i, (bx, by) in enumerate(boxes):
             a = ease(prog(l, i * 8, 18 + i * 8)) * split
             # dois momentos do MESMO atleta: takes de teste reaproveitados (custo zero)
-            card(base, clip("t2_seedance_b", 20 + l) if i == 0 else clip("r2_seedance_b", 30 + l),
+            card(base, clip("t2_seedance_b", 20 + l) if i == 0 else clip("s4b_kit", 30 + l),
                  (bx, by, pw, ph), int(H * 0.012), LIME if i else CYAN, 3, a)
             d = ImageDraw.Draw(base)
             tag(d, (bx + 14, by - H * 0.035), ("Momento A · Treino" if i == 0 else "Momento B · Jogo"), int(H * (0.024 if not V else 0.014)), LIME if i else CYAN, a)
