@@ -117,3 +117,20 @@ Fonte: `assets/interfaces/redesign/` (também em `iscout-telas-novas/`; a pasta 
 | S5 · A decisão humana | `C3.0-perfil-atleta-clube` ou comentários do treinador em `4.2.9` | Tela consultada pelo treinador (substitui a UI genérica do `mock-coach-tablet`). |
 
 Regras: exibir em moldura de celular, recortes ampliados (≥ 60% da altura em 9:16), sem ler números como promessa; números de demonstração **desfocados ou neutralizados** até aprovação; manter o disclaimer "interfaces ilustrativas". Não usar telas de pagamento, termos, PIN ou marketplace (ruído e dado sensível).
+
+## 8. Resultado do lote de teste (05/11/2026)
+
+Executado no Magnific. **Custo real: 3.040 créditos** (saldo 41.655 → 38.615), igual ao estimado. Arquivos locais em `animatic/out/gen/` (fora do git); originais na conta Magnific, projeto Personal.
+
+| ID | Resultado | Avaliação |
+|---|---|---|
+| T0a (2 imgs) | Folha frente/perfil/costas, uniforme navy liso com friso lima | ✅ Sem texto/escudo. Variação 2 escolhida como referência (luz neutra). |
+| T0b início (2) | Atleta recebendo a bola, câmera rente, estádio noturno | ✅ Variação 2 escolhida (câmera mais baixa). |
+| T0b fim (2) | Mesmo atleta após o giro, mesmo estádio | ✅ Consistentes com o início. |
+| T1 Kling 2.5 (2 × 5 s, 1928×1072) | Condução lenta e giro suave, enquadramento aberto | ⚠️ Identidade e cenário estáveis, mas o lance é tímido: a bola fica quase parada e o giro não lê como "mudança de direção". |
+| T2 Seedance 2.5 A (5 s, 480p) | Recepção, giro marcado e arrancada de costas para o fundo | ✅ Melhor leitura da ação e energia. ⚠️ Bola parada demais antes do toque (contato pouco crível). |
+| T2 Seedance 2.5 B (5 s, 480p) | Close nas chuteiras, toque, tilt até o rosto | ✅ Contato pé-bola próximo e legível; ótimo para abrir o filme. |
+
+Critérios: texto/escudos ✅ todos; anatomia ✅ sem membros extras; consistência de personagem ✅; **contato pé-bola: parcial** em todos.
+
+**Decisão recomendada:** Seedance 2.5 como motor. Montar S1 em **dois planos com corte na ação** (B: toque em close → A: giro e arrancada), o que esconde a fragilidade do contato. Próxima rodada (~2.000 cr): Seedance 2.5 com **quadro inicial travado** e bola entrando em movimento ("ball rolls in from the right"), depois finalizar o escolhido em 1080p (~3.950 cr por 5 s).
