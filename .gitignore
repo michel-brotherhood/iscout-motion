@@ -1,0 +1,27 @@
+# Sistema e editores
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+.vscode/
+.idea/
+
+# Segredos e configurações locais
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Dependências e builds
+node_modules/
+dist/
+build/
+.next/
+.cache/
+coverage/
+
+# Renderizações temporárias
+*.tmp
+*.log
+renders/temp/
