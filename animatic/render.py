@@ -128,6 +128,13 @@ def phone(base, name, cx, cy, ph, scroll=0.0, alpha=1.0):
     m = Image.new("L", (iw, ih), 0); ImageDraw.Draw(m).rounded_rectangle([0, 0, iw - 1, ih - 1], int(r * 0.8), fill=int(255 * alpha))
     base.paste(tile, (int(x0 + bez), int(y0 + bez)), m)
 
+def fade(base, a, draw_fn):
+    """Desenha numa camada opaca e compõe com opacidade a (0..1)."""
+    if a <= 0: return
+    ov = Image.new("RGBA", base.size, (0, 0, 0, 0)); draw_fn(ImageDraw.Draw(ov))
+    if a < 1: ov.putalpha(ov.split()[3].point(lambda v: int(v * a)))
+    base.alpha_composite(ov)
+
 def tag(d, xy, s, size, color=LIME, alpha=1.0, anchor="la"):
     text(d, xy, s.upper(), size, fill=color, alpha=alpha, anchor=anchor)
 
@@ -262,7 +269,7 @@ def s5_decisao(f, W, H, V):
         bg = cover(clip("mock-coach-tablet", 10 + l), W, H, 1.05 + l * 0.0008, 0.45 if not V else 0.42, 0.5)
         bg = darken(bg, 0.1)
         # insert: o que o treinador consulta — player com lances e comentários (4.2.9)
-        ia = ease(prog(l, 34, 50))
+        ia = ease(prog(l, 4, 18))
         if ia > 0:
             bg = Image.blend(bg, darken(bg.filter(ImageFilter.GaussianBlur(H * 0.012)), 0.35), ia)
             sc = 0.45 + 0.55 * inout(prog(l, 50, 92))
@@ -304,13 +311,13 @@ def s6_marca(f, W, H, V):
     lg = logo.resize((int(lw), int(lh)), Image.LANCZOS); lg.putalpha(lg.split()[3].point(lambda v: v * la))
     base.alpha_composite(lg, (int(lg_xy[0] + (1 - la) * 20), int(lg_xy[1])))
     s = int(H * (0.05 if not V else 0.03)); y0 = H * (0.58 if not V else 0.57)
-    d = ImageDraw.Draw(base)
-    text(d, (W / 2, y0 + (1 - t1) * 15), "O talento acontece em campo.", s, alpha=t1, anchor="mm")
-    text(d, (W / 2, y0 + s * 1.3 + (1 - t2) * 15), "A iSCOUT ajuda a enxergá-lo.", s, fill=LIME, alpha=t2, anchor="mm")
     bs = int(s * 0.62); bw = font(bs).getlength("CONHEÇA A ISCOUT") + bs * 2.4; by = y0 + s * 3.0
-    d.rounded_rectangle([W / 2 - bw / 2, by, W / 2 + bw / 2, by + bs * 2.4], int(bs * 1.2), fill=LIME + (int(255 * ca),))
-    text(d, (W / 2, by + bs * 1.2), "Conheça a iSCOUT", bs, fill=NAVY, alpha=ca, anchor="mm")
-    text(d, (W / 2, by + bs * 3.6), "iscout.tech", int(bs * 0.95), fill=WHITE, alpha=ua, anchor="mm", bold=False)
+    # cada elemento em camada própria: desenhar RGBA direto no quadro ignora a transparência
+    fade(base, t1, lambda d: text(d, (W / 2, y0 + (1 - t1) * 15), "O talento acontece em campo.", s, anchor="mm"))
+    fade(base, t2, lambda d: text(d, (W / 2, y0 + s * 1.3 + (1 - t2) * 15), "A iSCOUT ajuda a enxergá-lo.", s, fill=LIME, anchor="mm"))
+    fade(base, ca, lambda d: (d.rounded_rectangle([W / 2 - bw / 2, by, W / 2 + bw / 2, by + bs * 2.4], int(bs * 1.2), fill=LIME + (255,)),
+                              text(d, (W / 2, by + bs * 1.2), "Conheça a iSCOUT", bs, fill=NAVY, anchor="mm")))
+    fade(base, ua, lambda d: text(d, (W / 2, by + bs * 3.6), "iscout.tech", int(bs * 0.95), fill=WHITE, anchor="mm", bold=False))
     return base, "logo/ícone oficiais (bitmap) · leitura livre a partir de 27 s"
 
 SCENES = [(0, 120, "1 · A jogada", "SFX: toque de bola, chuteira na grama; trilha entra seca", s1_jogada),
