@@ -190,3 +190,18 @@ O orçamento da §10 (≈15.271 cr) foi **descartado**. Plano enxuto, custo zero
 | S5a / S5b | `mock-coach-tablet` (tela coberta pelo insert do app) / trecho final do `v2-panorama-sm` |
 
 Opcional dentro do teto: 1 plano novo do treinador sem upscale (~800–1.000 cr), só se o existente não convencer.
+
+## 12. Uniforme real do clube (versão limpa)
+
+Decisão do cliente: usar o uniforme real do clube **sem marcas** (sem patrocinador, fornecedor, números ou escudo). Referência limpa gerada a partir da foto do uniforme (Nano Banana 2.1, 65 cr) e aplicada nos planos já aprovados, mantendo o movimento:
+
+| Plano | Ferramenta | Saída | Custo |
+|---|---|---|---|
+| S1 (R2-A 1080p) | Magnific video_modify · Kling 4.0 1080p | 1928×1076, 121 frames → master `S1_dominio_1080p_uniforme.mp4` 1920×1080 | 1.650 |
+| S4-B (R2-B 480p) | video_modify · Gemini Omni 1.2 Flash 720p (Kling exige ≥700 px) | 1280×720, 120 frames | 700 |
+
+Verificação: listras navy/vermelho, gola e barra vermelhas conferem; **nenhum texto, número ou logo surgiu**; rosto, corpo, bola e câmera preservados. S4-A (close nas chuteiras) não mostra a camisa — sem custo.
+
+**Créditos:** 2.415 do teto de 3.000 (restam **585**). Saldo Magnific 31.246.
+
+Pendência visual: os cards pequenos do S3 (takes T2-A e Kling A) ainda mostram o uniforme navy antigo.
