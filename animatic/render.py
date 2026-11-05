@@ -351,8 +351,9 @@ if __name__ == "__main__":
             render(int(fr), W, H, "--clean" not in sys.argv).save(os.path.join(out, "frame_%s_%s.png" % (fmt, fr)))
         sys.exit()
     p = subprocess.Popen(["ffmpeg", "-v", "error", "-y", "-f", "rawvideo", "-pix_fmt", "rgb24", "-s", "%dx%d" % (W, H),
-                          "-r", str(FPS), "-i", "-", "-c:v", "libx264", "-crf", "23", "-preset", "fast", "-pix_fmt", "yuv420p",
-                          os.path.join(out, "animatic_%s.mp4" % ("16x9" if fmt == "h" else "9x16"))], stdin=subprocess.PIPE)
+                          "-r", str(FPS), "-i", "-", "-c:v", "libx264", "-crf", ("16" if "--clean" in sys.argv else "23"), "-preset", ("slow" if "--clean" in sys.argv else "fast"), "-pix_fmt", "yuv420p",
+                          os.path.join(out, ("final_%s.mp4" if "--clean" in sys.argv else "animatic_%s.mp4") % ("16x9" if fmt == "h" else "9x16"))], stdin=subprocess.PIPE)
+    hud = "--clean" not in sys.argv
     for f in range(TOTAL):
-        p.stdin.write(render(f, W, H).tobytes())
+        p.stdin.write(render(f, W, H, hud).tobytes())
     p.stdin.close(); p.wait()
