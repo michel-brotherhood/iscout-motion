@@ -6,17 +6,20 @@ Atos: sombra (P&B) -> evidência (verde iSCOUT) -> retratos + montagem rápida -
 import os, subprocess, sys
 import numpy as np
 from PIL import Image, ImageDraw, ImageFilter
-from fx import (W, H, FPS, WA, frames, bw, duo, glitch, electric, glow_draw, title, font)
+from fx import (W, H, FPS, WA, VERT, frames, bw, duo, glitch, electric, glow_draw, title, font)
 
 PORT = os.environ["PORT"]
 A = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "assets")
 LIME = (205, 213, 92)
 YW = 60             # recorte vertical dos clipes (mantém a legenda/marca d'água fora do 2.39:1)
 
+FOCUS = {"c1.png": .70, "c2.png": .28, "c3.png": .72}   # ponto de interesse horizontal no recorte vertical
+
 def img_frames(name, dur):
     im = Image.open(os.path.join(PORT, name)).convert("RGB")
     s = max(W / im.width, H / im.height); im = im.resize((int(im.width * s) + 1, int(im.height * s) + 1), Image.LANCZOS)
-    x, y = (im.width - W) // 2, (im.height - H) // 2
+    fx = FOCUS.get(name, .5) if VERT else .5
+    x, y = int(min(max(0, im.width * fx - W / 2), im.width - W)), (im.height - H) // 2
     a = np.asarray(im.crop((x, y, x + W, y + H))).astype(np.float32)
     return [a] * int(round(dur * FPS))
 
@@ -31,13 +34,13 @@ def phone_shot(n, clip_name, start, screen, o, seed):
     """Fundo da família desfocado + celular com a tela real do app (números já desfocados) subindo e rolando."""
     bg = frames(os.path.join(A, "footage", clip_name), start, n / FPS)
     sc = Image.open(os.path.join(SCREENS, screen)).convert("RGB")
-    ph_h = int(H * .92); ph_w = int(ph_h * 9 / 19.5); bez = 10
+    ph_h = int(H * (.74 if VERT else .92)); ph_w = int(ph_h * 9 / 19.5); bez = 10
     iw, ih = ph_w - 2 * bez, ph_h - 2 * bez; k = iw / sc.width; vis = int(ih / k)
     out = []
     for i in range(n):
         b = Image.fromarray(np.clip(duo(bg[min(i, len(bg) - 1)]) * .55, 0, 255).astype(np.uint8)).filter(ImageFilter.GaussianBlur(14)).convert("RGBA")
         t = min(1, i / 10); e = 1 - (1 - t) ** 3
-        x0 = int(W * .5 - ph_w / 2); y0 = int((H - ph_h) / 2 + (1 - e) * H * .5)
+        x0 = int(W * .5 - ph_w / 2); y0 = int((H - ph_h) / (2.6 if VERT else 2) + (1 - e) * H * .5)
         top = int((sc.height - vis) * .28 * min(1, i / n))
         tile = sc.crop((0, top, sc.width, top + vis)).resize((iw, ih), Image.LANCZOS)
         d = ImageDraw.Draw(b)
@@ -126,7 +129,18 @@ def nat(fr):
     """Cor natural dessaturada: o mundo real antes de virar dado."""
     return fr * 0.55 + bw(fr, 1.25, 0.05) * 0.45
 
-TOTAL = 1146   # 47,75 s
+# cortes: (índices do EDL, frame em que a marca entra = impacto da trilha, total de frames)
+CUTS = {
+    "full": (None, 963, 1146),
+    "30": ([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 12, 13, 17, 18, 22, 23, 28, 29, 41], 553, 720),
+    "15": ([0, 4, 5, 8, 9, 12, 13, 18, 41], 264, 360),
+}
+CUT = os.environ.get("CUT", "full")
+_sel, BRAND_AT, TOTAL = CUTS[CUT]
+if _sel is not None:
+    EDL = [EDL[i] for i in _sel]
+    used = sum(int(round(d * FPS)) for d, *_ in EDL[:-1])
+    EDL[-1] = ((BRAND_AT - used) / FPS,) + tuple(EDL[-1][1:])   # o "converge" fecha a conta exata
 
 def text_opt(im, o, i, n):
     if "txt" not in o: return
@@ -196,23 +210,24 @@ def brand(n):
         im = Image.new("RGBA", (W, H), (0, 0, 0, 255))
         e = lambda a, b: max(0, min(1, (i - a) / (b - a)))
         k = 1 - (1 - e(0, 12)) ** 3
-        s = int(H * .30 * (0.7 + 0.3 * k))
+        s = int(min(W, H) * (.36 if VERT else .30) * (0.7 + 0.3 * k)) if VERT else int(H * .30 * (0.7 + 0.3 * k))
         ic = icon.resize((s, s), Image.LANCZOS); ic.putalpha(ic.split()[3].point(lambda v: int(v * k)))
-        cx = W * .5 - (W * .17) * e(14, 26); cy = H * .36
+        cx = W * .5 - (0 if VERT else (W * .17) * e(14, 26)); cy = H * (.30 if VERT else .36)
         if i < 16:   # anel de energia fechando no ícone
             glow_draw(im, lambda d: d.ellipse([cx - s * .62, cy - s * .62, cx + s * .62, cy + s * .62], outline=LIME + (int(255 * (1 - i / 16)),), width=5), 18, 4)
         im.alpha_composite(ic, (int(cx - s / 2), int(cy - s / 2)))
         la = e(18, 30)
         if la > 0:
-            lw = int(W * .32); lh = int(lw * logo.height / logo.width)
+            lw = int(W * (.62 if VERT else .32)); lh = int(lw * logo.height / logo.width)
             lg = logo.resize((lw, lh), Image.LANCZOS); lg.putalpha(lg.split()[3].point(lambda v: int(v * la)))
-            im.alpha_composite(lg, (int(W * .5 - W * .03 + (1 - la) * 30), int(cy - lh / 2)))
-        title(im, "O talento acontece em campo.", 54, H * .68, outline=False, a=e(28, 36))
-        title(im, "A iSCOUT ajuda a enxergá-lo.", 54, H * .77, outline=False, a=e(32, 40), color=LIME)
+            if VERT: im.alpha_composite(lg, (int(W / 2 - lw / 2), int(cy + s * .65 + (1 - la) * 30)))
+            else: im.alpha_composite(lg, (int(W * .5 - W * .03 + (1 - la) * 30), int(cy - lh / 2)))
+        title(im, "O talento acontece em campo.", 54 if not VERT else 80, H * (.60 if VERT else .68), outline=False, a=e(28, 36))
+        title(im, "A iSCOUT ajuda a enxergá-lo.", 54 if not VERT else 80, H * (.66 if VERT else .77), outline=False, a=e(32, 40), color=LIME)
         ca = e(40, 48)
         if ca > 0:
             ov = Image.new("RGBA", (W, H), (0, 0, 0, 0)); d = ImageDraw.Draw(ov)
-            bw_, by = 720, H * .855
+            bw_, by = (720 if not VERT else 900), H * (.76 if VERT else .855)
             d.rounded_rectangle([W / 2 - bw_ / 2, by, W / 2 + bw_ / 2, by + 76], 38, fill=LIME + (255,))
             d.text((W / 2 - 175, by + 38), "Conheça a iSCOUT", font=font(34), anchor="mm", fill=(8, 12, 8, 255))
             d.text((W / 2 + 195, by + 38), "iscout.tech", font=font(34), anchor="mm", fill=(8, 12, 8, 255))
@@ -232,7 +247,7 @@ if __name__ == "__main__":
     f = 0; seed = 1; rng = np.random.default_rng(3)
     BUG = Image.open(os.path.join(A, "brand/icone.png")).convert("RGBA").resize((68, 68), Image.LANCZOS)
     BUG.putalpha(BUG.split()[3].point(lambda v: int(v * .85)))
-    BRAND_START = 963            # o ícone fixo sai quando a assinatura entra
+    BRAND_START = BRAND_AT            # o ícone fixo sai quando a assinatura entra
     BUGA = np.asarray(BUG).astype(np.float32)
     BX, BY = W - 68 - 36, H - 68 - 30
     show_bug = [True]
