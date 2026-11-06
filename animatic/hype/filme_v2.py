@@ -88,11 +88,11 @@ SHOTS = [
     # 5 · ACOMPANHAMENTO
     (T(79.56), ("vid", "wa4.mp4", 2.0, 5.4), "duo", dict(crop=(1.35, .30, .22))),
     (T(84.88), ("ast", "mock-coach-tablet.mp4", 1.0, 4.9), "duolift", dict(push=.05)),
-    (T(89.74), ("phone", "mock-family-app.mp4", 6.0, "4.3.0-relatorio.png"), None, {}),
+    (T(89.74), ("phone", "mock-family-app.mp4", 5.0, "4.3.0-relatorio.png"), None, {}),
     # 6 · ESCOLINHAS, CLUBES E MARCAS
     (T(93.16), ("img", v2("club1.png")), "duo", dict(push=.05, gl=3)),
     (T(97.68), ("img", v2("coach1.png")), "duo", dict(push=.05)),
-    (T(101.02), ("phone", "mock-family-app.mp4", 7.0, "C3.0-perfil-atleta-clube.png"), None, {}),   # área do clube no app
+    (T(101.02), ("phone", "mock-family-app.mp4", 0.5, "C3.0-perfil-atleta-clube.png"), None, {}),   # área do clube no app
     # 7 · FECHAMENTO — ecossistema + retratos
     (T(104.38), ("img", "p2.png"), "duo", dict(push=.07, v=True)),
     *[(T(107.6 + .4 * k), s, "duo", dict(gl=2, hud=s[1] in ("c1.png", "c3.png"))) for k, s in enumerate(FAST)],
