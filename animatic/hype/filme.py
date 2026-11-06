@@ -201,7 +201,7 @@ def render_shot(dur, source, grade, o, seed):
         out.append(im)
     return out
 
-def brand(n):
+def brand(n, l1="O talento acontece em campo.", l2="A iSCOUT ajuda a enxergá-lo.", cta=("Conheça a iSCOUT", "iscout.tech")):
     """25–30 s: tudo assentado até 27 s (frame 48 desta cena), depois leitura."""
     icon = Image.open(os.path.join(A, "brand/icone.png")).convert("RGBA")
     logo = Image.open(os.path.join(A, "brand/iscout-logo-branca.png")).convert("RGBA")
@@ -222,15 +222,15 @@ def brand(n):
             lg = logo.resize((lw, lh), Image.LANCZOS); lg.putalpha(lg.split()[3].point(lambda v: int(v * la)))
             if VERT: im.alpha_composite(lg, (int(W / 2 - lw / 2), int(cy + s * .65 + (1 - la) * 30)))
             else: im.alpha_composite(lg, (int(W * .5 - W * .03 + (1 - la) * 30), int(cy - lh / 2)))
-        title(im, "O talento acontece em campo.", 54 if not VERT else 80, H * (.60 if VERT else .68), outline=False, a=e(28, 36))
-        title(im, "A iSCOUT ajuda a enxergá-lo.", 54 if not VERT else 80, H * (.66 if VERT else .77), outline=False, a=e(32, 40), color=LIME)
+        title(im, l1, 54 if not VERT else 80, H * (.60 if VERT else .68), outline=False, a=e(28, 36))
+        title(im, l2, 54 if not VERT else 80, H * (.66 if VERT else .77), outline=False, a=e(32, 40), color=LIME)
         ca = e(40, 48)
         if ca > 0:
             ov = Image.new("RGBA", (W, H), (0, 0, 0, 0)); d = ImageDraw.Draw(ov)
             bw_, by = (720 if not VERT else 900), H * (.76 if VERT else .855)
             d.rounded_rectangle([W / 2 - bw_ / 2, by, W / 2 + bw_ / 2, by + 76], 38, fill=LIME + (255,))
-            d.text((W / 2 - 175, by + 38), "Conheça a iSCOUT", font=font(34), anchor="mm", fill=(8, 12, 8, 255))
-            d.text((W / 2 + 195, by + 38), "iscout.tech", font=font(34), anchor="mm", fill=(8, 12, 8, 255))
+            d.text((W / 2 - 175, by + 38), cta[0], font=font(34), anchor="mm", fill=(8, 12, 8, 255))
+            d.text((W / 2 + 195, by + 38), cta[1], font=font(34), anchor="mm", fill=(8, 12, 8, 255))
             d.line([(W / 2 + 48, by + 18), (W / 2 + 48, by + 58)], fill=(8, 12, 8, 160), width=2)
             ov.putalpha(ov.split()[3].point(lambda v: int(v * ca))); im.alpha_composite(ov)
         out.append(im)
