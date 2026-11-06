@@ -3,7 +3,9 @@ import math, os, random, subprocess, sys
 import numpy as np
 from PIL import Image, ImageDraw, ImageFilter, ImageFont
 
-W, H, FPS = 1920, 804, 24
+FMT = os.environ.get("FMT", "239")
+W, H, FPS = (1080, 1920, 24) if FMT == "916" else (1920, 804, 24)
+VERT = H > W
 WA, FONT = os.environ["SRCWA"], os.environ["FONTDIR"]
 LIME = np.array([205, 213, 92]); GREEN = np.array([104, 177, 45]); DEEP = np.array([4, 14, 8])
 rng = random.Random(7)
@@ -12,7 +14,10 @@ def frames(path, start, dur, speed=1.0, y_off=None):
     """Decodifica um trecho já recortado em 2.39:1 (y_off controla o corte vertical)."""
     n = int(round(dur * FPS))
     sh = int(H * 1.0)
-    vf = f"setpts={1/speed}*PTS,fps={FPS},scale={W}:-2,crop={W}:{H}:0:{'(ih-oh)/2' if y_off is None else y_off}"
+    if VERT:   # vertical: preenche a altura e recorta o centro (a marca d'água fica fora, à direita)
+        vf = f"setpts={1/speed}*PTS,fps={FPS},scale=-2:{H},crop={W}:{H}"
+    else:
+        vf = f"setpts={1/speed}*PTS,fps={FPS},scale={W}:-2,crop={W}:{H}:0:{'(ih-oh)/2' if y_off is None else y_off}"
     raw = subprocess.run(["ffmpeg", "-v", "error", "-ss", str(start), "-i", path, "-vf", vf, "-frames:v", str(n),
                           "-f", "rawvideo", "-pix_fmt", "rgb24", "-"], capture_output=True, check=True).stdout
     arr = np.frombuffer(raw, np.uint8).reshape(-1, H, W, 3)
@@ -71,12 +76,25 @@ def glow_draw(base, fn, blur=10, strength=2):
 
 font = lambda s: ImageFont.truetype(os.path.join(FONT, "Sora-700.ttf"), s)
 
+def wrap_lines(txt, size, maxw):
+    words, lines, cur = txt.split(), [], ""
+    for w_ in words:
+        t = (cur + " " + w_).strip()
+        if font(size).getlength(t) > maxw and cur: lines.append(cur); cur = w_
+        else: cur = t
+    return lines + [cur]
+
 def title(base, txt, size, y, outline=True, a=1.0, color=(255, 255, 255)):
     ov = Image.new("RGBA", (W, H), (0, 0, 0, 0)); d = ImageDraw.Draw(ov)
-    if outline:
-        d.text((W / 2, y), txt, font=font(size), anchor="mm", fill=(0, 0, 0, 0), stroke_width=4, stroke_fill=color + (255,))
-    else:
-        d.text((W / 2, y), txt, font=font(size), anchor="mm", fill=color + (255,))
+    if VERT: size = int(size * .62)
+    lines = wrap_lines(txt, size, W * .88)
+    y0 = y - (len(lines) - 1) * size * 1.08 / 2
+    for k, ln in enumerate(lines):
+        yy = y0 + k * size * 1.08
+        if outline:
+            d.text((W / 2, yy), ln, font=font(size), anchor="mm", fill=(0, 0, 0, 0), stroke_width=4, stroke_fill=color + (255,))
+        else:
+            d.text((W / 2, yy), ln, font=font(size), anchor="mm", fill=color + (255,))
     if a < 1: ov.putalpha(ov.split()[3].point(lambda v: int(v * a)))
     # sombra difusa para leitura sobre fumaça e realces claros
     sh = ov.split()[3].filter(ImageFilter.GaussianBlur(size * .18)).point(lambda v: int(min(255, v * 1.6)))

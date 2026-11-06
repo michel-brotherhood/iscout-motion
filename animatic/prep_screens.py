@@ -42,8 +42,36 @@ def blur_numbers(src, dst):
     im.save(dst)
     return n
 
+def rename_profile(path, portrait, font_path):
+    """Troca a foto e o nome de demonstração do perfil (4.2.0) pelo protagonista #8 do filme."""
+    from PIL import ImageDraw, ImageFont
+    im = Image.open(path).convert("RGB"); W = im.width
+    navy = im.getpixel((W // 2, 712))
+    top, bot = 214, 672
+    pr = Image.open(portrait).convert("RGB")
+    # recorte do rosto/peito do retrato (centro da imagem 21:9)
+    cw = int(pr.height * W / (bot - top) * .62); cx = pr.width // 2
+    face = pr.crop((cx - cw // 2, 0, cx + cw // 2, int(pr.height * .62))).resize((W, bot - top), Image.LANCZOS)
+    im.paste(face, (0, top))
+    # degradê para o azul do app na metade de baixo, como no layout original
+    grad = Image.new("RGB", (W, bot - top), navy); mask = Image.new("L", (W, bot - top))
+    md = ImageDraw.Draw(mask)
+    for y in range(bot - top):
+        md.line([(0, y), (W, y)], fill=int(255 * max(0, (y / (bot - top) - .45) / .55) ** 1.3))
+    im.paste(grad, (0, top), mask)
+    d = ImageDraw.Draw(im)
+    d.rounded_rectangle([32, 553, 126, 597], 10, fill=(245, 196, 66))
+    d.text((79, 575), "ELITE", font=ImageFont.truetype(font_path, 22), anchor="mm", fill=(40, 30, 10))
+    d.text((32, 636), "Atleta #8", font=ImageFont.truetype(font_path, 54), anchor="lm", fill=(255, 255, 255))
+    d.rectangle([0, 672, W, 706], fill=navy)
+    d.text((32, 690), "Atacante · Camisa 8", font=ImageFont.truetype(font_path.replace("700", "400"), 22), anchor="lm", fill=(190, 198, 214))
+    im.save(path)
+
 if __name__ == "__main__":
     out = sys.argv[1]; os.makedirs(out, exist_ok=True)
     for s in SCREENS:
         n = blur_numbers(os.path.join(ROOT, s), os.path.join(out, os.path.basename(s)))
         print(f"{os.path.basename(s)}: {n} tokens numéricos desfocados")
+    if os.environ.get("PORTRAIT") and os.environ.get("FONT"):
+        rename_profile(os.path.join(out, "4.2.0-perfil-atleta.png"), os.environ["PORTRAIT"], os.environ["FONT"])
+        print("4.2.0: foto e nome trocados para o #8")
