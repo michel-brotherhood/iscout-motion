@@ -4,7 +4,7 @@ import numpy as np
 from PIL import Image, ImageDraw, ImageFilter, ImageFont
 
 FMT = os.environ.get("FMT", "239")
-W, H, FPS = (1080, 1920, 24) if FMT == "916" else (1920, 804, 24)
+W, H, FPS = {"916": (1080, 1920, 24), "169": (1920, 1080, 24)}.get(FMT, (1920, 804, 24))
 VERT = H > W
 WA, FONT = os.environ["SRCWA"], os.environ["FONTDIR"]
 LIME = np.array([205, 213, 92]); GREEN = np.array([104, 177, 45]); DEEP = np.array([4, 14, 8])
@@ -16,6 +16,10 @@ def frames(path, start, dur, speed=1.0, y_off=None):
     sh = int(H * 1.0)
     if VERT:   # vertical: preenche a altura e recorta o centro (a marca d'água fica fora, à direita)
         vf = f"setpts={1/speed}*PTS,fps={FPS},scale=-2:{H},crop={W}:{H}"
+    elif FMT == "169" and y_off is not None:
+        # 16:9 cheio com os clipes de referência: leve zoom e recorte à esquerda/acima para
+        # manter a marca d'água do gerador (canto inferior direito) fora do quadro
+        vf = f"setpts={1/speed}*PTS,fps={FPS},scale=2208:-2,crop={W}:{H}:0:60"
     else:
         vf = f"setpts={1/speed}*PTS,fps={FPS},scale={W}:-2,crop={W}:{H}:0:{'(ih-oh)/2' if y_off is None else y_off}"
     raw = subprocess.run(["ffmpeg", "-v", "error", "-ss", str(start), "-i", path, "-vf", vf, "-frames:v", str(n),
