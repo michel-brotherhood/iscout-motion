@@ -29,18 +29,20 @@ def src(kind, *p):
     return frames(f"{WA}/{p[0]}", p[1], p[2], y_off=YW)
 
 SCREENS = os.environ.get("SCREENS", "")
+PHONE_H = PHONE_Y = None    # V2 sobe e reduz o celular para deixar a faixa de legenda livre
 
 def phone_shot(n, clip_name, start, screen, o, seed):
     """Fundo da família desfocado + celular com a tela real do app (números já desfocados) subindo e rolando."""
     bg = frames(os.path.join(A, "footage", clip_name), start, n / FPS)
     sc = Image.open(os.path.join(SCREENS, screen)).convert("RGB")
-    ph_h = int(H * (.74 if VERT else .92)); ph_w = int(ph_h * 9 / 19.5); bez = 10
+    ph_h = int(H * (PHONE_H or (.74 if VERT else .92))); ph_w = int(ph_h * 9 / 19.5); bez = 10
     iw, ih = ph_w - 2 * bez, ph_h - 2 * bez; k = iw / sc.width; vis = int(ih / k)
     out = []
     for i in range(n):
         b = Image.fromarray(np.clip(duo(bg[min(i, len(bg) - 1)]) * .55, 0, 255).astype(np.uint8)).filter(ImageFilter.GaussianBlur(14)).convert("RGBA")
         t = min(1, i / 10); e = 1 - (1 - t) ** 3
-        x0 = int(W * .5 - ph_w / 2); y0 = int((H - ph_h) / (2.6 if VERT else 2) + (1 - e) * H * .5)
+        x0 = int(W * .5 - ph_w / 2)
+        y0 = int((H * PHONE_Y if PHONE_Y is not None else (H - ph_h) / (2.6 if VERT else 2)) + (1 - e) * H * .5)
         top = int((sc.height - vis) * .28 * min(1, i / n))
         tile = sc.crop((0, top, sc.width, top + vis)).resize((iw, ih), Image.LANCZOS)
         d = ImageDraw.Draw(b)
