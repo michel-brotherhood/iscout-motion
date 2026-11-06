@@ -5,7 +5,7 @@ Atos: sombra (P&B) -> evidência (verde iSCOUT) -> retratos + montagem rápida -
 """
 import os, subprocess, sys
 import numpy as np
-from PIL import Image, ImageDraw
+from PIL import Image, ImageDraw, ImageFilter
 from fx import (W, H, FPS, WA, frames, bw, duo, glitch, electric, glow_draw, title, font)
 
 PORT = os.environ["PORT"]
@@ -21,7 +21,32 @@ def img_frames(name, dur):
     return [a] * int(round(dur * FPS))
 
 def src(kind, *p):
-    return img_frames(*p) if kind == "img" else frames(f"{WA}/{p[0]}", p[1], p[2], y_off=YW)
+    if kind == "img": return img_frames(*p)
+    if kind == "ast": return frames(os.path.join(A, "footage", p[0]), p[1], p[2])
+    return frames(f"{WA}/{p[0]}", p[1], p[2], y_off=YW)
+
+SCREENS = os.environ.get("SCREENS", "")
+
+def phone_shot(n, clip_name, start, screen, o, seed):
+    """Fundo da família desfocado + celular com a tela real do app (números já desfocados) subindo e rolando."""
+    bg = frames(os.path.join(A, "footage", clip_name), start, n / FPS)
+    sc = Image.open(os.path.join(SCREENS, screen)).convert("RGB")
+    ph_h = int(H * .92); ph_w = int(ph_h * 9 / 19.5); bez = 10
+    iw, ih = ph_w - 2 * bez, ph_h - 2 * bez; k = iw / sc.width; vis = int(ih / k)
+    out = []
+    for i in range(n):
+        b = Image.fromarray(np.clip(duo(bg[min(i, len(bg) - 1)]) * .55, 0, 255).astype(np.uint8)).filter(ImageFilter.GaussianBlur(14)).convert("RGBA")
+        t = min(1, i / 10); e = 1 - (1 - t) ** 3
+        x0 = int(W * .5 - ph_w / 2); y0 = int((H - ph_h) / 2 + (1 - e) * H * .5)
+        top = int((sc.height - vis) * .28 * min(1, i / n))
+        tile = sc.crop((0, top, sc.width, top + vis)).resize((iw, ih), Image.LANCZOS)
+        d = ImageDraw.Draw(b)
+        d.rounded_rectangle([x0 - 2, y0 - 2, x0 + ph_w + 2, y0 + ph_h + 2], 46, fill=(12, 16, 12, 255), outline=LIME + (255,), width=3)
+        m = Image.new("L", (iw, ih), 0); ImageDraw.Draw(m).rounded_rectangle([0, 0, iw - 1, ih - 1], 36, fill=255)
+        b.paste(tile, (x0 + bez, y0 + bez), m)
+        text_opt(b, o, i, n)
+        out.append(b)
+    return out
 
 def zoom(im, z, fx=0.5, fy=0.5):
     if z == 1: return im
@@ -54,18 +79,20 @@ EDL = [
     (1.2, ("vid", "wa5.mp4", 3.2, 1.2), "duo", dict(gl=3)),
     # ATO 3 · EVIDÊNCIA (verde iSCOUT)
     (1.2, ("vid", "wa5.mp4", 0.2, 1.2), "duo", dict(push=.04)),
-    (1.4, ("vid", "wa1.mp4", 4.4, 1.4), "duo", dict(txt=("CADA JOGADA", 150, .80, True))),
+    (1.4, ("vid", "wa1.mp4", 4.4, 1.4), "duo", dict(txt=("CADA JOGADA", 150, .80, False))),
     (1.0, ("vid", "wa3.mp4", 4.0, 1.0), "duo", dict(gl=3, txt=("CONTA.", 170, .80, False, LIME))),
     (1.2, ("vid", "wa2.mp4", 0.3, 1.2), "duo", dict(push=.04)),
-    (1.4, ("vid", "wa2.mp4", 3.0, 1.4), "duo", dict(txt=("UMA TRAJETÓRIA", 140, .80, True))),
+    (1.4, ("vid", "wa2.mp4", 3.0, 1.4), "duo", dict(txt=("UMA TRAJETÓRIA", 140, .80, False))),
     (1.2, ("vid", "wa2.mp4", 7.0, 1.2), "duo", dict(txt=("REVELA MAIS.", 160, .80, False, LIME))),
-    (1.4, ("vid", "wa4.mp4", 2.0, 1.4), "duo", dict(crop=(1.35, .30, .22), txt=("DECISÃO HUMANA", 140, .80, True))),
+    (1.25, ("ast", "mock-family-app.mp4", 2.0, 1.25), "duolift", dict(push=.05, txt=("A FAMÍLIA ACOMPANHA.", 130, .86, False))),
+    (1.5, ("phone", "mock-family-app.mp4", 3.3, "4.2.0-perfil-atleta.png"), "duo", dict(txt=("A EVOLUÇÃO NO APP.", 120, .88, False, LIME))),
+    (1.4, ("vid", "wa4.mp4", 2.0, 1.4), "duo", dict(crop=(1.35, .30, .22), txt=("DECISÃO HUMANA", 140, .80, False))),
     (1.4, ("vid", "wa4.mp4", 4.0, 1.4), "duo", dict(crop=(1.35, .30, .22), txt=("COM EVIDÊNCIA.", 150, .80, False, LIME))),
-    (2.0, ("vid", "wa6.mp4", 1.6, 2.0), "duo", dict(gl=3, push=.05)),
+    (2.0, ("vid", "wa6.mp4", 1.6, 2.0), "duohard", dict(gl=3, push=.05)),
     (0.15, "flash", None, dict(color=LIME)),
     # ATO 4 · RETRATOS + CLÍMAX
     (2.05, ("img", "p1.png"), "duo", dict(push=.07, v=True, txt=("INTELIGÊNCIA PARA DESENVOLVER", 84, .90, False))),
-    (0.2, ("vid", "wa3.mp4", 6.0, 0.2), "duo", dict(gl=2)),
+    (0.2, ("vid", "wa3.mp4", 4.9, 0.2), "duo", dict(gl=2)),
     (0.2, ("img", "c1.png"), "duo", dict(gl=2, hud=True)),
     (0.2, ("vid", "wa5.mp4", 6.0, 0.2), "duo", dict(gl=2)),
     (0.2, ("img", "c2.png"), "duo", dict(gl=2, hud=True)),
@@ -74,7 +101,7 @@ EDL = [
     (2.0, ("img", "p4.png"), "duo", dict(push=.06, edges=True)),
     (0.35, ("vid", "wa3.mp4", 4.5, 0.35), "duo", dict(gl=2)),
     (0.35, ("img", "c3.png"), "duo", dict(gl=2, hud=True)),
-    (0.35, ("vid", "wa1.mp4", 3.6, 0.35), "duo", dict(gl=2)),
+    (0.35, ("vid", "wa1.mp4", 3.3, 0.35), "duo", dict(gl=2)),
     (0.35, ("vid", "wa5.mp4", 7.0, 0.35), "duo", dict(gl=2)),
     (0.35, ("img", "c1.png"), "duo", dict(gl=2, hud=True)),
     (0.35, ("vid", "wa2.mp4", 3.8, 0.35), "duo", dict(gl=2)),
@@ -99,7 +126,7 @@ def nat(fr):
     """Cor natural dessaturada: o mundo real antes de virar dado."""
     return fr * 0.55 + bw(fr, 1.25, 0.05) * 0.45
 
-TOTAL = 1080   # 45 s
+TOTAL = 1146   # 47,75 s
 
 def text_opt(im, o, i, n):
     if "txt" not in o: return
@@ -126,6 +153,8 @@ def render_shot(dur, source, grade, o, seed):
                                      electric(d, [(W, H * .5), (W * (1 - .5 * t), H * .5)], 1, 6, seed + i + 50)), 18, 4)
             out.append(im)
         return out
+    if source[0] == "phone":
+        return phone_shot(n, source[1], source[2], source[3], o, seed)
     if source[0] == "scan":
         clip = src(*source[1])[:n]
     else:
@@ -135,6 +164,8 @@ def render_shot(dur, source, grade, o, seed):
         if grade == "bw": a = bw(fr, 1.7, 0.1)
         elif grade == "duo": a = duo(fr)
         elif grade == "nat": a = nat(fr)
+        elif grade == "duolift": a = duo(np.clip(fr * 1.35 + 25, 0, 255))   # plano escuro de fim de tarde
+        elif grade == "duohard": a = duo(np.clip((fr - 70) * 1.5, 0, 255))   # interfaces claras: desce os realces
         elif grade == "scan":
             # linha de varredura: à esquerda o vídeo bruto, à direita o dado (verde iSCOUT)
             x = int(W * min(1, i / (n * .7))); a = nat(fr).copy(); a[:, :x] = duo(fr)[:, :x]
@@ -201,7 +232,7 @@ if __name__ == "__main__":
     f = 0; seed = 1; rng = np.random.default_rng(3)
     BUG = Image.open(os.path.join(A, "brand/icone.png")).convert("RGBA").resize((68, 68), Image.LANCZOS)
     BUG.putalpha(BUG.split()[3].point(lambda v: int(v * .85)))
-    BRAND_START = 897            # o ícone fixo sai quando a assinatura entra
+    BRAND_START = 963            # o ícone fixo sai quando a assinatura entra
     BUGA = np.asarray(BUG).astype(np.float32)
     BX, BY = W - 68 - 36, H - 68 - 30
     show_bug = [True]
