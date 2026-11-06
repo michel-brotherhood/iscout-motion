@@ -56,7 +56,7 @@ SHOTS = [
     # 1 · ABERTURA — o campo nasce com IA
     (0.0, ("field", 10.8), "none", dict(txt=("TODO TALENTO COMEÇA EM ALGUM LUGAR.", 74, .86, False), tin=1.0, tout=4.6)),
     (T(4.6), None, None, dict(txt=("SORTE. INDICAÇÃO. VISIBILIDADE LOCAL.", 74, .86, False))),   # texto sobre o mesmo plano
-    (T(10.0), ("vid", "wa3.mp4", 4.0, 2.4), "bwduo", dict(gl=4, txt=("DEMOCRATIZAR O CAMINHO", 120, .82, False))),
+    (T(10.0), ("vid", "wa6.mp4", 1.6, 2.4), "bwduo", dict(gl=4, txt=("DEMOCRATIZAR O CAMINHO", 120, .82, False))),
     (T(12.4), ("img", "p4.png"), "duo", dict(push=.06, edges=True, txt=("DESDE CEDO.", 150, .82, False, LIME))),
     (T(14.92), ("img", v2("coach2.png")), "duo", dict(push=.05, txt=("O MELHOR ENSINO DE BASE DO MUNDO", 84, .86, False))),
     (T(17.6), ("img", v2("coach1.png")), "duo", dict(push=.05, txt=("PARA TODOS.", 150, .84, False, LIME))),

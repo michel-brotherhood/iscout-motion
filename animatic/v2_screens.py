@@ -28,7 +28,8 @@ retext(im, (55, 720, 600, 776), "Atleta #8", f4(30), (65, 748), (235, 238, 245))
 retext(im, (55, 1105, 200, 1160), "8", f4(30), (65, 1132), (235, 238, 245))
 im.save(p)
 
-p = os.path.join(D, "4.3.0-relatorio.png"); im = Image.open(p).convert("RGB")
-avatar(im, 96, 281, 66)
-retext(im, (180, 262, 660, 318), "Atleta #8", f7(44), (184, 291), (255, 255, 255))
-im.save(p)
+for name in ("4.3.0-relatorio.png", "4.2.2-galeria-videos.png"):   # mesmo cabeçalho de perfil
+    p = os.path.join(D, name); im = Image.open(p).convert("RGB")
+    avatar(im, 96, 281, 66)
+    retext(im, (180, 262, 660, 318), "Atleta #8", f7(44), (184, 291), (255, 255, 255))
+    im.save(p)
