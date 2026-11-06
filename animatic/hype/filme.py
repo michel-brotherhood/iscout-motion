@@ -11,7 +11,7 @@ from fx import (W, H, FPS, WA, frames, bw, duo, glitch, electric, glow_draw, tit
 PORT = os.environ["PORT"]
 A = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "assets")
 LIME = (205, 213, 92)
-YW = 100            # recorte vertical dos clipes (mantém a legenda/marca d'água fora do 2.39:1)
+YW = 60             # recorte vertical dos clipes (mantém a legenda/marca d'água fora do 2.39:1)
 
 def img_frames(name, dur):
     im = Image.open(os.path.join(PORT, name)).convert("RGB")
@@ -199,13 +199,25 @@ if __name__ == "__main__":
     p = subprocess.Popen(["ffmpeg", "-v", "error", "-y", "-f", "rawvideo", "-pix_fmt", "rgb24", "-s", f"{W}x{H}", "-r", str(FPS), "-i", "-",
                           "-c:v", "libx264", "-crf", "16", "-preset", "medium", "-pix_fmt", "yuv420p", sys.argv[1]], stdin=subprocess.PIPE)
     f = 0; seed = 1; rng = np.random.default_rng(3)
+    BUG = Image.open(os.path.join(A, "brand/icone.png")).convert("RGBA").resize((68, 68), Image.LANCZOS)
+    BUG.putalpha(BUG.split()[3].point(lambda v: int(v * .85)))
+    BRAND_START = 897            # o ícone fixo sai quando a assinatura entra
+    BUGA = np.asarray(BUG).astype(np.float32)
+    BX, BY = W - 68 - 36, H - 68 - 30
+    show_bug = [True]
     def emit(im, ev=True):
         global f
         a = np.asarray(im.convert("RGB")).astype(np.float32)
         a = a * VIG if ev else a
         a = a + rng.normal(0, 7, (H, W, 1)).astype(np.float32)
+        # ícone fixo no canto inferior direito, do 2º plano até a assinatura; aplicado depois da
+        # vinheta/grão para ficar nítido, e oculto nos planos com HUD de gravação (cantoneiras)
+        if 38 <= f < BRAND_START and show_bug[0]:
+            al = BUGA[..., 3:] / 255
+            a[BY:BY + 68, BX:BX + 68] = a[BY:BY + 68, BX:BX + 68] * (1 - al) + BUGA[..., :3] * al
         p.stdin.write(np.clip(a, 0, 255).astype(np.uint8).tobytes()); f += 1
     for dur, source, grade, o in EDL:
+        show_bug[0] = not o.get("hud")
         for im in render_shot(dur, source, grade, o, seed): emit(im)
         seed += 37
     for im in brand(TOTAL - f): emit(im, ev=False)
