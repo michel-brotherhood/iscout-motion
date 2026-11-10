@@ -178,6 +178,8 @@ filme_v2.SHOTS = SHOTS
 # legenda extra para o bloco do potencial (o cartão já não traz "sem prometer carreira")
 CAPS.append((65.5, " · ", [(61.84, "SEM PROMETER CARREIRA"), (63.26, "ESPAÇO REAL DE CRESCIMENTO", G)]))
 CAPS.sort(key=lambda c: c[2][0][0])
+# cenas agora claras e naturais: toda legenda ganha a faixa escura difusa (antes só na abertura e no fecho)
+CAPS[:] = [c if len(c) > 3 else c + (dict(band=True),) for c in CAPS]
 
 def render(d, s, g, o, seed, t0):
     n = int(round(d * FPS))
