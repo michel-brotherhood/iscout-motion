@@ -15,7 +15,7 @@ import numpy as np
 from PIL import Image, ImageDraw, ImageFilter
 import filme, filme_v2
 from filme import brand, LIME, A
-from filme_v2 import T, card, caption, CAPS, demo_shot, shots as _shots, NARR_IN, TOTAL
+from filme_v2 import T, card, CAPS, demo_shot, shots as _shots, NARR_IN, TOTAL
 from fx import W, H, FPS, VERT, font, lum
 
 V3 = os.environ["V3"]
@@ -178,8 +178,24 @@ filme_v2.SHOTS = SHOTS
 # legenda extra para o bloco do potencial (o cartão já não traz "sem prometer carreira")
 CAPS.append((65.5, " · ", [(61.84, "SEM PROMETER CARREIRA"), (63.26, "ESPAÇO REAL DE CRESCIMENTO", G)]))
 CAPS.sort(key=lambda c: c[2][0][0])
-# cenas agora claras e naturais: toda legenda ganha a faixa escura difusa (antes só na abertura e no fecho)
-CAPS[:] = [c if len(c) > 3 else c + (dict(band=True),) for c in CAPS]
+# cenas claras e naturais: em vez de faixa atrás do texto, um degradê suave na base do quadro (terço inferior,
+# até ~70 % de escuro) que entra e sai junto com a legenda — legível sem "tarja" sobre a imagem
+CAPS[:] = [tuple(c[:3]) for c in CAPS]
+_SCRIM = None
+
+def caption(im, tf):
+    global _SCRIM
+    tn = tf - NARR_IN
+    for end, sep, parts in CAPS:
+        if parts[0][0] - .3 <= tn < end + .3:
+            a = min(1, max(0, (tn - parts[0][0] + .3) / .3)) * min(1, max(0, (end + .3 - tn) / .3))
+            if _SCRIM is None:
+                y0 = int(H * .62); r = np.clip((np.arange(H) - y0) / (H - y0), 0, 1) ** 1.4 * .72
+                _SCRIM = np.repeat((r * 255)[:, None], W, 1).astype(np.float32)
+            m = Image.fromarray((_SCRIM * a).astype(np.uint8))
+            im.alpha_composite(Image.merge("RGBA", (*[Image.new("L", (W, H), 0)] * 3, m)))
+            break
+    filme_v2.caption(im, tf)
 
 def render(d, s, g, o, seed, t0):
     n = int(round(d * FPS))
