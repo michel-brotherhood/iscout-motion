@@ -161,10 +161,20 @@ def caption(im, tf):
         if opt and opt[0].get("band"):
             # faixa escura difusa atrás do texto: contraste sobre fundos claros/verdes
             ga = min(1, max(0, (tn - parts[0][0]) / .12)) * min(1, max(0, (end - tn) / .2))
-            bw_ = max(sum(f.getlength(p[1]) for p in ln) + f.getlength(sep) * (len(ln) - 1) for ln in lines)
+            # a faixa cresce com o texto: cobre só até o fim do trecho já falado (suave, pela opacidade do trecho)
+            xa, xb, rows = W, 0, []
+            for k, ln in enumerate(lines):
+                tot = sum(f.getlength(p[1]) for p in ln) + f.getlength(sep) * (len(ln) - 1); x = W / 2 - tot / 2; x0, x1 = x, None
+                for j, p in enumerate(ln):
+                    if j: x += f.getlength(sep)
+                    w_ = f.getlength(p[1]); pa = min(1, max(0, (tn - p[0]) / .25))
+                    if pa > 0: x1 = x + w_ * (1 - (1 - pa) ** 3) if x1 is None or pa < 1 else x + w_
+                    x += w_
+                if x1 is not None: xa, xb = min(xa, x0), max(xb, x1); rows.append(k)
             bd = Image.new("RGBA", (W, H), (0, 0, 0, 0))
-            ImageDraw.Draw(bd).rounded_rectangle([W / 2 - bw_ / 2 - CAP_SIZE, y0 - lh * .75, W / 2 + bw_ / 2 + CAP_SIZE, y0 + (len(lines) - 1) * lh + lh * .75],
-                                                 CAP_SIZE // 2, fill=(0, 0, 0, int(225 * ga)))
+            if rows:
+                ImageDraw.Draw(bd).rounded_rectangle([xa - CAP_SIZE * .7, y0 + rows[0] * lh - lh * .75, xb + CAP_SIZE * .7, y0 + rows[-1] * lh + lh * .75],
+                                                     CAP_SIZE // 2, fill=(0, 0, 0, int(225 * ga)))
             im.alpha_composite(bd.filter(ImageFilter.GaussianBlur(CAP_SIZE * .3)))
         sh = ov.split()[3].filter(ImageFilter.GaussianBlur(10)).point(lambda v: int(v * .8))
         im.alpha_composite(Image.merge("RGBA", (*[Image.new("L", (W, H), 0)] * 3, sh))); im.alpha_composite(ov)
