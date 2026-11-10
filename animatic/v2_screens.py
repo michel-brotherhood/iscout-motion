@@ -33,3 +33,12 @@ for name in ("4.3.0-relatorio.png", "4.2.2-galeria-videos.png"):   # mesmo cabe�
     avatar(im, 96, 281, 66)
     retext(im, (180, 262, 660, 318), "Atleta #8", f7(44), (184, 291), (255, 255, 255))
     im.save(p)
+
+# área do clube (C3.0): cartão do atleta + aviso de compartilhamento sem nomes de exemplo
+p = os.path.join(D, "C3.0-perfil-atleta-clube.png")
+if os.path.exists(p):
+    im = Image.open(p).convert("RGB")
+    avatar(im, 130, 311, 60)
+    retext(im, (212, 272, 434, 320), "Atleta #8", f7(34), (218, 296), (255, 255, 255))
+    retext(im, (126, 470, 722, 556), "Dados compartilhados pelo responsável", f7(25), (130, 494), (255, 255, 255))
+    im.save(p)

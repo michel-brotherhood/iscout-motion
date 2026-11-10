@@ -88,11 +88,11 @@ SHOTS = [
     # 5 · ACOMPANHAMENTO
     (T(79.56), ("vid", "wa4.mp4", 2.0, 5.4), "duo", dict(crop=(1.35, .30, .22))),
     (T(84.88), ("ast", "mock-coach-tablet.mp4", 1.0, 4.9), "duolift", dict(push=.05)),
-    (T(89.74), ("phone", "mock-family-app.mp4", 6.0, "4.3.0-relatorio.png"), None, {}),
+    (T(89.74), ("phone", "mock-family-app.mp4", 5.0, "4.3.0-relatorio.png"), None, {}),
     # 6 · ESCOLINHAS, CLUBES E MARCAS
     (T(93.16), ("img", v2("club1.png")), "duo", dict(push=.05, gl=3)),
     (T(97.68), ("img", v2("coach1.png")), "duo", dict(push=.05)),
-    (T(101.02), ("phone", "mock-family-app.mp4", 7.0, "C3.0-perfil-atleta-clube.png"), None, {}),   # área do clube no app
+    (T(101.02), ("phone", "mock-family-app.mp4", 0.5, "C3.0-perfil-atleta-clube.png"), None, {}),   # área do clube no app
     # 7 · FECHAMENTO — ecossistema + retratos
     (T(104.38), ("img", "p2.png"), "duo", dict(push=.07, v=True)),
     *[(T(107.6 + .4 * k), s, "duo", dict(gl=2, hud=s[1] in ("c1.png", "c3.png"))) for k, s in enumerate(FAST)],
@@ -107,7 +107,7 @@ SHOTS = [
 # (tempos da transcrição palavra a palavra, em s da locução). (fim, separador, [(t, trecho, verde?)])
 G = LIME
 CAPS = [
-    (2.3, " ", [(0.0, "TODO TALENTO"), (0.82, "COMEÇA EM ALGUM LUGAR.")]),
+    (2.3, " ", [(0.0, "TODO TALENTO"), (0.82, "COMEÇA EM ALGUM LUGAR.")], dict(band=True)),   # sobre as linhas do campo
     (9.9, " ", [(5.76, "SORTE."), (6.48, "INDICAÇÃO."), (7.44, "VISIBILIDADE LOCAL.")]),
     (12.3, " ", [(10.16, "O iSCOUT EXISTE"), (11.36, "PARA MUDAR ISSO.")]),
     (14.8, " ", [(12.44, "DEMOCRATIZAR O CAMINHO"), (13.64, "DESDE CEDO.", G)]),
@@ -134,7 +134,7 @@ CAPS = [
     (111.4, " ", [(110.06, "UM SÓ ECOSSISTEMA", G)]),
     (113.7, " ", [(111.56, "MAIS VISIBILIDADE"), (112.62, "PARA QUEM JOGA")]),
     (116.1, " ", [(113.76, "MAIS INFORMAÇÃO"), (114.48, "PARA QUEM ACOMPANHA")]),
-    (118.5, " ", [(116.18, "MAIS TRANSPARÊNCIA", G), (117.2, "PARA QUEM INVESTE", G)]),
+    (118.5, " ", [(116.18, "MAIS TRANSPARÊNCIA"), (117.2, "PARA QUEM INVESTE", G)], dict(band=True)),   # sobre as linhas de energia
 ]
 CAP_SIZE = int(50 * H / 804) if not VERT else 48
 filme.PHONE_H, filme.PHONE_Y = .76, .03
@@ -142,7 +142,7 @@ filme.PHONE_H, filme.PHONE_Y = .76, .03
 def caption(im, tf):
     """Desenha o grupo de legenda ativo no tempo de filme tf; layout fixo, cada trecho surge na sua palavra."""
     tn = tf - NARR_IN
-    for end, sep, parts in CAPS:
+    for end, sep, parts, *opt in CAPS:
         if not (parts[0][0] - .05 <= tn < end): continue
         f = font(CAP_SIZE); maxw = W * .86; lines = [[]]; wcur = 0
         for p in parts:   # quebra de linha estável (calculada com todos os trechos)
@@ -158,6 +158,14 @@ def caption(im, tf):
                 col = (p[2] if len(p) > 2 else (255, 255, 255)) + (int(255 * a),)
                 if j: d.text((x, y0 + k * lh), sep, font=f, anchor="lm", fill=(255, 255, 255, int(170 * a))); x += f.getlength(sep)
                 d.text((x, y0 + k * lh), p[1], font=f, anchor="lm", fill=col); x += f.getlength(p[1])
+        if opt and opt[0].get("band"):
+            # faixa escura difusa atrás do texto: contraste sobre fundos claros/verdes
+            ga = min(1, max(0, (tn - parts[0][0]) / .12)) * min(1, max(0, (end - tn) / .2))
+            bw_ = max(sum(f.getlength(p[1]) for p in ln) + f.getlength(sep) * (len(ln) - 1) for ln in lines)
+            bd = Image.new("RGBA", (W, H), (0, 0, 0, 0))
+            ImageDraw.Draw(bd).rounded_rectangle([W / 2 - bw_ / 2 - CAP_SIZE, y0 - lh * .75, W / 2 + bw_ / 2 + CAP_SIZE, y0 + (len(lines) - 1) * lh + lh * .75],
+                                                 CAP_SIZE // 2, fill=(0, 0, 0, int(225 * ga)))
+            im.alpha_composite(bd.filter(ImageFilter.GaussianBlur(CAP_SIZE * .3)))
         sh = ov.split()[3].filter(ImageFilter.GaussianBlur(10)).point(lambda v: int(v * .8))
         im.alpha_composite(Image.merge("RGBA", (*[Image.new("L", (W, H), 0)] * 3, sh))); im.alpha_composite(ov)
         return
