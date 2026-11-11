@@ -236,7 +236,7 @@ if __name__ == "__main__":
                 al = BUGA[..., 3:] / 255
                 a[BY:BY + 68, BX:BX + 68] = a[BY:BY + 68, BX:BX + 68] * (1 - al) + BUGA[..., :3] * al
             p.stdin.write(np.clip(a, 0, 255).astype(np.uint8).tobytes()); f += 1
-    for im in brand(TOTAL - f, "Transformando o futuro", "do futebol de base.", ("Explore nosso app", "iscout.tech"), l2y=.735):
+    for im in brand(TOTAL - f, "Transformando o futuro", "do futebol de base.", "Visite iscout.tech", l2y=.735):
         a = np.asarray(im.convert("RGB")).astype(np.float32) + rng.normal(0, 3, (H, W, 1)).astype(np.float32)
         p.stdin.write(np.clip(a, 0, 255).astype(np.uint8).tobytes()); f += 1
     p.stdin.close(); p.wait()
