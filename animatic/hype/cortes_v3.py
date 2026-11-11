@@ -35,7 +35,7 @@ for cut, segs in CUTS.items():
              "".join(f"[n{i}]atrim={a}:{b},asetpts=PTS-STARTPTS,afade=t=in:d=0.015,afade=t=out:st={b-a-0.015}:d=0.015[a{i}];" for i, (a, b) in enumerate(segs))
         fc = vf + af + "".join(f"[v{i}]" for i in range(len(segs))) + f"concat=n={len(segs)}:v=1:a=0[v];" + \
              "".join(f"[a{i}]" for i in range(len(segs))) + f"concat=n={len(segs)}:v=0:a=1[nar];" + \
-             f"[2:a]atempo=0.9681,aresample=48000,atrim=start={127.5-dur}:end=127.5,asetpts=PTS-STARTPTS,volume=-3dB,afade=t=in:d=0.6,afade=t=out:st={dur-1.5}:d=1.5[m];" + \
+             f"[2:a]atempo=0.9681,aresample=48000,atrim=start={127.5-dur}:end=127.5,asetpts=PTS-STARTPTS,volume=-6dB,afade=t=in:d=0.6,afade=t=out:st={dur-1.5}:d=1.5[m];" + \
              "[nar]asplit=2[n][sc];[m][sc]sidechaincompress=threshold=0.03:ratio=4:attack=30:release=450:makeup=1[md];" + \
              "[md][n]amix=inputs=2:normalize=0:duration=first,loudnorm=I=-14.3:TP=-2:LRA=11,aresample=48000,alimiter=limit=0.8:level=false[o]"
         out = os.path.join(V3, "entregas", f"iSCOUT_V3_{cut}s_{tag}.mp4")
