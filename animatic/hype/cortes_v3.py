@@ -4,7 +4,7 @@ Cada trecho começa e termina em fronteira de frase da locução (tempos da tran
 então a narração nunca é cortada no meio. A trilha é o final da trilha da V3 (pega o drop e o fecho na
 assinatura), com duck sob a voz.
 
-Uso: python3 cortes_v3.py <out/v3> <out/v2/narr.wav>
+Uso: python3 cortes_v3.py <out/v3> <out/v3/narr3.wav>   (narr3 = locução com o CTA "Visite nosso site…")
 """
 import os, subprocess, sys
 
