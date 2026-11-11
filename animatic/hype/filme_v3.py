@@ -31,6 +31,15 @@ def vivid(a):
 filme.nat = vivid
 filme.duo = lambda a, mix=1.0: vivid(a)          # fundo desfocado dos planos de celular
 
+_src_prev = filme.src
+def _src3(kind, *p):
+    """'vids': clipe do usuário com velocidade (câmera lenta) — permite usar só os trechos sem legenda gravada."""
+    if kind == "vids":
+        from fx import frames, WA
+        return frames(f"{WA}/{p[0]}", p[1], p[2], speed=p[3], y_off=filme.YW)
+    return _src_prev(kind, *p)
+filme.src = _src3
+
 def v3(name): return os.path.relpath(os.path.join(V3, name), os.environ["PORT"])
 def ref(name): return os.path.relpath(os.path.join(A, "references", name), os.environ["PORT"])
 
@@ -124,7 +133,7 @@ def mini_radar(im, active, a):
     radar(im, cx, cy, R, [a] * 5, [a] * 5, active=active, labels=False, k=k * .6)
 
 # ---------- timeline (mesmos tempos da V2; trocas de imagem e gradação) ----------
-FAST = [("vid", "wa3.mp4", 4.9, .4), ("img", v3("kids.png")), ("vid", "wa5.mp4", 6.0, .4), ("ast", "v2-panorama-sm.mp4", 2.0, .4),
+FAST = [("vid", "wa3.mp4", 3.5, .4), ("img", v3("kids.png")), ("vid", "wa2.mp4", 2.0, .4), ("ast", "v2-panorama-sm.mp4", 2.0, .4),
         ("vid", "wa1.mp4", 3.3, .4), ("img", v3("club.png")), ("vid", "wa2.mp4", 3.8, .4), ("img", v3("p_b1.png")),
         ("ast", "mock-coach-tablet.mp4", 3.0, .4), ("img", v3("p_a1.png"))]
 
@@ -144,10 +153,10 @@ SHOTS = [
     (T(34.4), ("ast", "mock-family-app.mp4", 2.0, 1.6), "nat", dict(push=.05)),
     (T(36.0), ("phone", "mock-family-app.mp4", 5.0, "4.2.1-interna-performance.png"), None, {}),
     (T(40.12), ("radar", "build"), None, {}),
-    (T(45.88), ("vid", "wa1.mp4", 4.4, 2.6), "nat", dict(card=("01", "TÉCNICA", "domínio · passe · drible · finalização"), dim=0)),
-    (T(48.4), ("vid", "wa1.mp4", 3.0, 3.7), "nat", dict(card=("02", "TÁTICA", "leitura de jogo · tomada de decisão"), dim=1)),
-    (T(52.08), ("vid", "wa3.mp4", 4.3, 3.3), "nat", dict(card=("03", "FÍSICO", "duelos · disputas · intensidade"), dim=2)),
-    (T(54.9), ("vid", "wa5.mp4", 0.2, 4.1), "nat", dict(card=("04", "RESILIÊNCIA", "constância · mesmo sob pressão"), dim=3)),
+    (T(45.88), ("vid", "wa1.mp4", 3.4, 2.6), "nat", dict(card=("01", "TÉCNICA", "domínio · passe · drible · finalização"), dim=0)),
+    (T(48.4), ("vids", "wa1.mp4", 0.0, 3.7, .54), "nat", dict(card=("02", "TÁTICA", "leitura de jogo · tomada de decisão"), dim=1)),
+    (T(52.08), ("vids", "wa3.mp4", 3.3, 2.85, .6), "nat", dict(card=("03", "FÍSICO", "duelos · disputas · intensidade"), dim=2)),
+    (T(54.9), ("img", v3("p_b1.png")), "nat", dict(push=.06, card=("04", "RESILIÊNCIA", "constância · mesmo sob pressão"), dim=3)),  # wa5 tinha grade e fusão (salto em 0:58)
     (T(58.92), ("img", v3("p_a2.png")), "nat", dict(push=.06, card=("05", "POTENCIAL", "margem de evolução"), dim=4)),
     (T(61.84), ("radar", "pot"), None, {}),
     # 4 · VÍDEOS E REGISTROS — captação em ambientes cuidados -> análise real
@@ -162,7 +171,7 @@ SHOTS = [
     (T(89.74), ("phone", "mock-family-app.mp4", 5.0, "4.3.0-relatorio.png"), None, {}),
     # 6 · ESCOLINHAS, CLUBES E MARCAS
     (T(93.16), ("img", v3("club.png")), "nat", dict(push=.05)),
-    (T(97.68), ("img", ref("youth-soccer-academy.jpg")), "nat", dict(push=.05)),
+    (T(97.68), ("img", v3("youth_dash.png")), "nat", dict(push=.05)),
     (T(101.02), ("phone", "mock-family-app.mp4", 0.5, "C3.0-perfil-atleta-clube.png"), None, {}),
     # 7 · FECHAMENTO
     (T(104.38), ("img", v3("p_b2.png")), "nat", dict(push=.07)),
@@ -227,7 +236,7 @@ if __name__ == "__main__":
                 al = BUGA[..., 3:] / 255
                 a[BY:BY + 68, BX:BX + 68] = a[BY:BY + 68, BX:BX + 68] * (1 - al) + BUGA[..., :3] * al
             p.stdin.write(np.clip(a, 0, 255).astype(np.uint8).tobytes()); f += 1
-    for im in brand(TOTAL - f, "Transformando o futuro", "do futebol de base.", ("Explore nosso app", "iscout.tech")):
+    for im in brand(TOTAL - f, "Transformando o futuro", "do futebol de base.", ("Explore nosso app", "iscout.tech"), l2y=.735):
         a = np.asarray(im.convert("RGB")).astype(np.float32) + rng.normal(0, 3, (H, W, 1)).astype(np.float32)
         p.stdin.write(np.clip(a, 0, 255).astype(np.uint8).tobytes()); f += 1
     p.stdin.close(); p.wait()

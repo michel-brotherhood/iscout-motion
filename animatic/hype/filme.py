@@ -203,7 +203,7 @@ def render_shot(dur, source, grade, o, seed):
         out.append(im)
     return out
 
-def brand(n, l1="O talento acontece em campo.", l2="A iSCOUT ajuda a enxergá-lo.", cta=("Conheça a iSCOUT", "iscout.tech")):
+def brand(n, l1="O talento acontece em campo.", l2="A iSCOUT ajuda a enxergá-lo.", cta=("Conheça a iSCOUT", "iscout.tech"), l2y=None):
     """25–30 s: tudo assentado até 27 s (frame 48 desta cena), depois leitura."""
     icon = Image.open(os.path.join(A, "brand/icone.png")).convert("RGBA")
     logo = Image.open(os.path.join(A, "brand/iscout-logo-branca.png")).convert("RGBA")
@@ -225,7 +225,7 @@ def brand(n, l1="O talento acontece em campo.", l2="A iSCOUT ajuda a enxergá-lo
             if VERT: im.alpha_composite(lg, (int(W / 2 - lw / 2), int(cy + s * .65 + (1 - la) * 30)))
             else: im.alpha_composite(lg, (int(W * .5 - W * .03 + (1 - la) * 30), int(cy - lh / 2)))
         title(im, l1, 54 if not VERT else 80, H * (.60 if VERT else .68), outline=False, a=e(28, 36))
-        title(im, l2, 54 if not VERT else 80, H * (.66 if VERT else .77), outline=False, a=e(32, 40), color=LIME)
+        title(im, l2, 54 if not VERT else 80, H * (.66 if VERT else (l2y or .77)), outline=False, a=e(32, 40), color=LIME)
         ca = e(40, 48)
         if ca > 0:
             ov = Image.new("RGBA", (W, H), (0, 0, 0, 0)); d = ImageDraw.Draw(ov)
