@@ -176,7 +176,7 @@ def caption(im, tf):
                 ImageDraw.Draw(bd).rounded_rectangle([xa - CAP_SIZE * .7, y0 + rows[0] * lh - lh * .75, xb + CAP_SIZE * .7, y0 + rows[-1] * lh + lh * .75],
                                                      CAP_SIZE // 2, fill=(0, 0, 0, int(225 * ga)))
             im.alpha_composite(bd.filter(ImageFilter.GaussianBlur(CAP_SIZE * .3)))
-        sh = ov.split()[3].filter(ImageFilter.GaussianBlur(10)).point(lambda v: int(v * .8))
+        sh = ov.split()[3].filter(ImageFilter.GaussianBlur(3)).point(lambda v: int(v * .5))   # sombra discreta, colada à letra
         im.alpha_composite(Image.merge("RGBA", (*[Image.new("L", (W, H), 0)] * 3, sh))); im.alpha_composite(ov)
         return
 
