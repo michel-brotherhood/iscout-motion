@@ -193,17 +193,16 @@ CAPS[:] = [tuple(c[:3]) for c in CAPS]
 _SCRIM = None
 
 def caption(im, tf):
+    """Degradê fixo na base durante todo o filme (entra no 1º segundo, sai antes da assinatura).
+    Antes ele acompanhava cada legenda e "piscava" entre uma frase e outra (feedback do Bernardo)."""
     global _SCRIM
-    tn = tf - NARR_IN
-    for end, sep, parts in CAPS:
-        if parts[0][0] - .3 <= tn < end + .3:
-            a = min(1, max(0, (tn - parts[0][0] + .3) / .3)) * min(1, max(0, (end + .3 - tn) / .3))
-            if _SCRIM is None:
-                y0 = int(H * .62); r = np.clip((np.arange(H) - y0) / (H - y0), 0, 1) ** 1.4 * .72
-                _SCRIM = np.repeat((r * 255)[:, None], W, 1).astype(np.float32)
-            m = Image.fromarray((_SCRIM * a).astype(np.uint8))
-            im.alpha_composite(Image.merge("RGBA", (*[Image.new("L", (W, H), 0)] * 3, m)))
-            break
+    a = min(1, max(0, (tf - .2) / .8)) * min(1, max(0, (SHOTS[-2][0] - tf) / .6))
+    if a > 0:
+        if _SCRIM is None:
+            y0 = int(H * .60); r = np.clip((np.arange(H) - y0) / (H - y0), 0, 1) ** 1.4 * .62
+            _SCRIM = np.repeat((r * 255)[:, None], W, 1).astype(np.float32)
+        m = Image.fromarray((_SCRIM * a).astype(np.uint8))
+        im.alpha_composite(Image.merge("RGBA", (*[Image.new("L", (W, H), 0)] * 3, m)))
     filme_v2.caption(im, tf)
 
 def render(d, s, g, o, seed, t0):
