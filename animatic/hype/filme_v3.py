@@ -138,7 +138,7 @@ def mini_radar(im, active, a):
     radar(im, cx, cy, R, [a] * 5, [a] * 5, active=active, labels=False, k=k * .6)
 
 # ---------- timeline (mesmos tempos da V2; trocas de imagem e gradação) ----------
-FAST = [("vid", "wa3.mp4", 3.5, .4), ("img", v3("kids.png")), ("vid", "wa2.mp4", 2.0, .4), ("ast", "v2-panorama-sm.mp4", 2.0, .4),
+FAST = [("vid", "wa3.mp4", 3.5, .4), ("img", v3("kids_c1.png")), ("vid", "wa2.mp4", 2.0, .4), ("ast", "v2-panorama-sm.mp4", 2.0, .4),
         ("vid", "wa1.mp4", 3.3, .4), ("img", v3("club.png")), ("vid", "wa2.mp4", 3.8, .4), ("img", v3("p_b1.png")),
         ("ast", "mock-coach-tablet.mp4", 3.0, .4), ("img", v3("p_a1.png"))]
 
@@ -147,7 +147,7 @@ SHOTS = [
     (0.0, ("field", 10.8), "none", {}),
     (T(10.0), ("img", v3("p_b2.png")), "nat", dict(push=.05)),
     (T(12.44), ("img", v3("p_a1.png")), "nat", dict(push=.06)),
-    (T(14.92), ("img", v3("kids.png")), "nat", dict(push=.05)),
+    (T(14.92), ("img", v3("kids_c1.png")), "nat", dict(push=.05)),
     (T(18.6), ("img", ref("soccer-training-hero.jpg")), "nat", dict(push=.05)),
     # 2 · ENTRADA NO APP — telas reais sobre a família em cor natural
     (T(20.08), ("phone", "mock-family-app.mp4", 1.0, "2.4.1-atleta-dados-pessoais.png"), None, {}),
