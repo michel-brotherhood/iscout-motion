@@ -14,9 +14,9 @@ import io
 src = Image.open(io.BytesIO(raw)).convert("RGB")
 SRC = [(497, 224), (768, 247), (728, 493), (430, 458)]          # tela no quadro do vídeo do site (TL, TR, BR, BL)
 d = ImageDraw.Draw(src)                                          # polegar no canto inferior direito -> fundo da tela
-d.polygon([(672, 384), (780, 384), (780, 548), (628, 548)], fill=src.getpixel((452, 436)))
+d.polygon([(662, 380), (790, 380), (790, 548), (618, 548)], fill=src.getpixel((452, 436)))
 im = Image.open(f"{A}/references/youth-soccer-academy.jpg").convert("RGB")
-DST = [(709, 587), (812, 561), (887, 655), (786, 683)]
+DST = [(706.5, 585.5), (817.5, 562.5), (888, 661), (765, 689)]   # cantos da área de tela (medidos em grade 1 px)
 
 def coeffs(dst, src_):   # transformação perspectiva: pontos de saída -> pontos de origem
     m = []
@@ -29,7 +29,7 @@ quad = Image.new("L", im.size, 0); ImageDraw.Draw(quad).polygon(DST, fill=255)
 a = np.asarray(im).astype(int); r, g, b = a[..., 0], a[..., 1], a[..., 2]
 skin = (r > 95) & (r > g + 10) & (g > b) & (r - b > 35)          # dedos por cima da tela
 yy, xx = np.mgrid[0:im.size[1], 0:im.size[0]]
-skin &= ((xx < 810) & (yy > 645)) | ((xx > 805) & (yy < 607))   # só nas zonas do polegar e do indicador
+skin &= ((xx < 815) & (yy > 640)) | ((xx > 805) & (yy < 607))   # só nas zonas do polegar e do indicador
 mask = (np.asarray(quad) > 0) & ~skin
 mimg = Image.fromarray((mask * 255).astype(np.uint8)).filter(ImageFilter.GaussianBlur(.8))
 out = Image.composite(warp, im, mimg)
