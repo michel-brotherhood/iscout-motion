@@ -119,7 +119,10 @@ def radar_shot(n, t0, mode):
             d.text((lx + 46 * k, ly + 47 * k), "potencial", font=f, anchor="lm", fill=(235, 240, 245))
         d = ImageDraw.Draw(im)
         d.text((W * .06, H * .10), title_txt[0], font=font(int(56 * k)), anchor="lm", fill=LIME + (int(255 * title_txt[1]),))
-        d.text((W * .06, H * .92), "Valores ilustrativos", font=font(int(22 * k)), anchor="lm", fill=(200, 208, 220, 200))
+        if mode == "pot":   # frase da locução dentro do layout do gráfico (antes era legenda e colidia com os rótulos)
+            for tw, txt, col in ((61.84, "Sem prometer carreira.", (235, 240, 245)), (63.26, "Espaço real de crescimento.", LIME)):
+                al = min(1, max(0, (tn - tw) / .25))
+                if al > 0: d.text((W * .06, H * (.20 if txt[0] == "S" else .27)), txt, font=font(int(34 * k)), anchor="lm", fill=col + (int(255 * al),))
         out.append(im)
     return out
 
@@ -171,7 +174,7 @@ SHOTS = [
     (T(89.74), ("phone", "mock-family-app.mp4", 5.0, "4.3.0-relatorio.png"), None, {}),
     # 6 · ESCOLINHAS, CLUBES E MARCAS
     (T(93.16), ("img", v3("club.png")), "nat", dict(push=.05)),
-    (T(97.68), ("img", v3("youth_dash.png")), "nat", dict(push=.05)),
+    (T(97.68), ("img", v3("coach_dash.png")), "nat", dict(push=.05)),
     (T(101.02), ("phone", "mock-family-app.mp4", 0.5, "C3.0-perfil-atleta-clube.png"), None, {}),
     # 7 · FECHAMENTO
     (T(104.38), ("img", v3("p_b2.png")), "nat", dict(push=.07)),
@@ -185,7 +188,7 @@ SHOTS = [
 filme_v2.SHOTS = SHOTS
 
 # legenda extra para o bloco do potencial (o cartão já não traz "sem prometer carreira")
-CAPS.append((65.5, " · ", [(61.84, "SEM PROMETER CARREIRA"), (63.26, "ESPAÇO REAL DE CRESCIMENTO", G)]))
+filme_v2.CAP_SIZE = int(44 * H / 804) if not VERT else 44   # legenda um pouco menor
 CAPS.sort(key=lambda c: c[2][0][0])
 # cenas claras e naturais: em vez de faixa atrás do texto, um degradê suave na base do quadro (terço inferior,
 # até ~70 % de escuro) que entra e sai junto com a legenda — legível sem "tarja" sobre a imagem
