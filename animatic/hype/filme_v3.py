@@ -34,6 +34,8 @@ filme.duo = lambda a, mix=1.0: vivid(a)          # fundo desfocado dos planos de
 _src_prev = filme.src
 def _src3(kind, *p):
     """'vids': clipe do usuário com velocidade (câmera lenta) — permite usar só os trechos sem legenda gravada."""
+    if kind == "v3vid":   # vídeo gerado para a V3 (out/v3)
+        return filme_v2.cover(os.path.join(V3, p[0]), p[1], p[2])
     if kind == "vids":
         from fx import frames, WA
         return frames(f"{WA}/{p[0]}", p[1], p[2], speed=p[3], y_off=filme.YW)
@@ -174,14 +176,14 @@ SHOTS = [
     (T(89.74), ("phone", "mock-family-app.mp4", 5.0, "4.3.0-relatorio.png"), None, {}),
     # 6 · ESCOLINHAS, CLUBES E MARCAS
     (T(93.16), ("img", v3("club.png")), "nat", dict(push=.05)),
-    (T(97.68), ("img", v3("coach_dash.png")), "nat", dict(push=.05)),
+    (T(97.68), ("tablet",), None, {}),   # tela do dashboard animada
     (T(101.02), ("phone", "mock-family-app.mp4", 0.5, "C3.0-perfil-atleta-clube.png"), None, {}),
     # 7 · FECHAMENTO
-    (T(104.38), ("img", v3("p_b2.png")), "nat", dict(push=.07)),
+    (T(104.38), ("v3vid", "bk1.mp4", 0.0, 3.25), "nat", {}),   # crianças no CT (vídeo)
     *[(T(107.6 + .4 * k), s, "nat", dict(hud=s[1] == "v2-panorama-sm.mp4")) for k, s in enumerate(FAST)],
-    (T(111.56), ("img", v3("p_a1.png")), "nat", dict(push=.06)),
-    (T(113.76), ("img", v3("p_b1.png")), "nat", dict(push=.06)),
-    (T(116.18), ("img", v3("p_a2.png")), "nat", dict(push=.06)),
+    (T(111.56), ("v3vid", "bk2.mp4", 0.0, 2.25), "nat", {}),
+    (T(113.76), ("v3vid", "bk1.mp4", 2.6, 2.45), "nat", {}),
+    (T(116.18), ("v3vid", "bk2.mp4", 3.4, 1.65), "nat", {}),
     (T(118.6) - 0.8, "converge", None, {}),
     (T(118.6), "brand", None, {}),
 ]
@@ -208,9 +210,29 @@ def caption(im, tf):
         im.alpha_composite(Image.merge("RGBA", (*[Image.new("L", (W, H), 0)] * 3, m)))
     filme_v2.caption(im, tf)
 
+_TAB = None
+
+def tablet_shot(n):
+    """Técnico com tablet: a tela do dashboard se anima (cabeçalho, foto, cartões, barras subindo) + leve push-in."""
+    global _TAB
+    if _TAB is None:
+        sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
+        from v3_tablet2 import Tablet
+        _TAB = Tablet(A, V3)
+    out = []
+    for i in range(n):
+        im = _TAB.frame(i / FPS)
+        s = max(W / im.width, H / im.height) * (1 + .05 * i / n)
+        im = im.resize((int(im.width * s) + 1, int(im.height * s) + 1), Image.LANCZOS)
+        x, y = (im.width - W) // 2, (im.height - H) // 2
+        a = vivid(np.asarray(im.crop((x, y, x + W, y + H))).astype(np.float32))
+        out.append(Image.fromarray(a.astype(np.uint8)).convert("RGBA"))
+    return out
+
 def render(d, s, g, o, seed, t0):
     n = int(round(d * FPS))
     if s[0] == "radar": return radar_shot(n, t0, s[1])
+    if s[0] == "tablet": return tablet_shot(n)
     o2 = {k: v for k, v in o.items() if k != "dim"}
     frs = filme_v2.render(d, s, g, o2, seed)
     if "dim" in o:
