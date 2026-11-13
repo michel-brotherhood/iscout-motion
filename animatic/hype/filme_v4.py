@@ -7,7 +7,8 @@ Mudanças:
    Resiliência → condução sob pressão (~7 s no total). Potencial segue no retrato + radar de evolução.
 2. Tática: o trecho do wa1 em câmera lenta é cortado antes das "duas bolas que viram uma" (~0:51 da V3).
 3. Telas do app sem desfoque: SCREENS deve apontar para a saída de animatic/v4_screens.py.
-4. "…clubes e patrocinadores" (1:49): uniforme com "SUA MARCA AQUI" no lugar de três planos da montagem.
+4. "…atletas … patrocinadores" (1:45): os dois garotos do CT com os uniformes de patrocínio (vídeo novo).
+5. Tablet do técnico (1:39): dashboard redesenhado cobrindo o vidro todo (antes sobrava faixa e aparecia um polegar).
 
 Uso: FMT=.. (envs da V3, com SCREENS=<telas v4>) LANCE=<out/lance/clips> python3 filme_v4.py <saida.mp4>
 """
@@ -100,12 +101,16 @@ SPLIT = [(45.88, 47.0, "tec", 0), (48.4, 49.9, "tat", 1), (52.08, 53.6, "fis", 2
 for t_real, t_holo, key, dim in reversed(SPLIT):
     i = at(T(t_real))
     SHOTS.insert(i + 1, (T(t_holo), ("holo", key), None, dict(dim=dim)))
-# 4 · patrocinadores: tira 3 planos da montagem rápida (k = 3, 4, 5) e põe o uniforme de 1,2 s
-fast_t = [T(107.6 + .4 * k) for k in range(len(m.FAST))]
-SHOTS = [s for s in SHOTS if not any(abs(s[0] - fast_t[k]) < 1e-6 for k in (4, 5))]
-i = next(j for j, s in enumerate(SHOTS) if abs(s[0] - fast_t[3]) < 1e-6)
-SHOTS[i] = (fast_t[3], ("img", v3img("uniforme_marca.png")), "nat", dict(push=.04))
+# 4 · patrocinadores (pedido do Michel, 13/11): os dois garotos do CT (bk1) recriados com os uniformes
+#     de patrocínio (bk3_kit.mp4: um de vermelho listrado, outro de azul-marinho); montagem rápida intacta
+SHOTS = [(t, ("v3vid", "bk3_kit.mp4") + s[2:], g, o) if isinstance(s, tuple) and s[:2] == ("v3vid", "bk1.mp4") else (t, s, g, o)
+         for t, s, g, o in SHOTS]
 m.SHOTS[:] = SHOTS                     # filme_v2.SHOTS é a mesma lista
+
+# 5 · tablet do técnico (1:39): dashboard desenhado em código, cobrindo o vidro inteiro (v4_tablet.py)
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
+from v4_tablet import Tablet as _Tab4
+m._TAB = _Tab4(A, m.V3)
 
 def render(d, s, g, o, seed, t0):
     n = int(round(d * FPS))
