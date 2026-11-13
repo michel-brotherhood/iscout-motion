@@ -4,7 +4,8 @@ Mudanças:
 1. Bloco das 5 dimensões: cada dimensão abre no plano real com o cartão ("01 TÉCNICA"…) e, na palavra-chave
    da locução, corta para uma "janela de análise" com o holograma do vídeo "O lance inteiro" (rastreio +
    cartão de métrica com estrelas). Técnica → domínio, Tática → leitura de jogo, Física → duelo,
-   Resiliência → condução sob pressão (~7 s no total). Potencial segue no retrato + radar de evolução.
+   Resiliência → condução sob pressão, Potencial → arrancada (~9 s no total).
+   Rótulos do radar ancorados para fora do gráfico (o "POTENCIAL" caía sobre a linha do contorno).
 2. Tática: o trecho do wa1 em câmera lenta é cortado antes das "duas bolas que viram uma" (~0:51 da V3).
 3. Telas do app sem desfoque: SCREENS deve apontar para a saída de animatic/v4_screens.py.
 4. "…atletas … patrocinadores" (1:45): os dois garotos do CT com os uniformes de patrocínio (vídeo novo).
@@ -34,6 +35,7 @@ HOLO = {
     "tat": ("v06", 1.8, 1.0, (420, 1050, 520, 1000, 380, "#8"), [("TÁTICO", "LEITURA DE JOGO", 5), ("TÁTICO", "TOMADA DE DECISÃO", 4)]),
     "fis": ("v03", 0.4, 1.0, (560, 1200, 600, 1180, 380, "#8"), [("FÍSICO", "DUELOS", 4), ("FÍSICO", "INTENSIDADE", 5)]),
     "res": ("v08", 0.6, 1.0, (500, 1100, 560, 1100, 460, "#8"), [("RESILIÊNCIA", "SOB PRESSÃO", 5), ("RESILIÊNCIA", "CONSTÂNCIA", 4)]),
+    "pot": ("v09", 0.6, 1.0, (680, 1100, 700, 1050, 380, "#8"), [("POTENCIAL", "MARGEM DE EVOLUÇÃO", 5), ("POTENCIAL", "PROJEÇÃO", 4)]),
 }
 
 def decode(path, ss, speed, n, w, h, cover):
@@ -97,7 +99,7 @@ def at(t):            # índice do plano V3 que começa em t (tempo do filme)
 
 SHOTS = list(S3)
 # 1–2 · dimensões: plano real encurtado + janela de análise (inícios em tempo da locução, na palavra-chave)
-SPLIT = [(45.88, 47.0, "tec", 0), (48.4, 49.9, "tat", 1), (52.08, 53.6, "fis", 2), (54.9, 57.0, "res", 3)]
+SPLIT = [(45.88, 47.0, "tec", 0), (48.4, 49.9, "tat", 1), (52.08, 53.6, "fis", 2), (54.9, 57.0, "res", 3), (58.92, 60.0, "pot", 4)]
 for t_real, t_holo, key, dim in reversed(SPLIT):
     i = at(T(t_real))
     SHOTS.insert(i + 1, (T(t_holo), ("holo", key), None, dict(dim=dim)))
@@ -105,12 +107,40 @@ for t_real, t_holo, key, dim in reversed(SPLIT):
 #     de patrocínio (bk3_kit.mp4: um de vermelho listrado, outro de azul-marinho); montagem rápida intacta
 SHOTS = [(t, ("v3vid", "bk3_kit.mp4") + s[2:], g, o) if isinstance(s, tuple) and s[:2] == ("v3vid", "bk1.mp4") else (t, s, g, o)
          for t, s, g, o in SHOTS]
+# 6 · uniformes nas cenas do #8 e nos jogos das dimensões (pedido do Michel, 13/11): o #8 passa a vestir o
+#     uniforme azul-marinho (nº 8) e os times do treino, os dois uniformes de patrocínio. Retratos recriados
+#     (p_*_kit.png) e trechos do treino regenerados (wa1k.mp4 começa no 0 s do wa1; wa3k no 3,3 s do wa3).
+KIT_IMG = {m.v3(n + ".png"): m.v3(n + "_kit.png") for n in ("p_b2", "p_a1", "p_b1", "p_a2")}
+KIT_VID = {"wa1.mp4": ("wa1k.mp4", 0.0), "wa3.mp4": ("wa3k.mp4", 3.3)}
+def _kit(s):
+    if not isinstance(s, tuple): return s
+    if s[0] == "img" and s[1] in KIT_IMG: return ("img", KIT_IMG[s[1]]) + s[2:]
+    if s[0] in ("vid", "vids") and s[1] in KIT_VID:
+        nm, off = KIT_VID[s[1]]; return (s[0], nm, max(0.0, s[2] - off)) + s[3:]
+    return s
+SHOTS = [(t, _kit(s), g, o) for t, s, g, o in SHOTS]
 m.SHOTS[:] = SHOTS                     # filme_v2.SHOTS é a mesma lista
 
 # 5 · tablet do técnico (1:39): dashboard desenhado em código, cobrindo o vidro inteiro (v4_tablet.py)
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
 from v4_tablet import Tablet as _Tab4
 m._TAB = _Tab4(A, m.V3)
+
+_radar3 = m.radar
+def radar4(im, cx, cy, R, reveal, grow, pot=0.0, active=None, labels=True, k=1.0):
+    _radar3(im, cx, cy, R, reveal, grow, pot=pot, active=active, labels=False, k=k)
+    if not labels: return
+    import math
+    d = ImageDraw.Draw(im); f = m.font(int(30 * k))
+    for i in range(5):
+        if grow[i] <= 0: continue
+        ang = -math.pi / 2 + 2 * math.pi * i / 5; c, s_ = math.cos(ang), math.sin(ang)
+        r = R * 1.10; x, y = cx + c * r, cy + s_ * r
+        anchor = "mb" if i == 0 else ("lm" if c > .3 else "rm" if c < -.3 else ("mt" if s_ > 0 else "mb"))
+        if i in (2, 3): anchor = "lt" if c > 0 else "rt"
+        a = int(255 * min(1, grow[i] * 2)); col = (LIME if i == active else (235, 240, 245)) + (a,)
+        d.text((x + (12 * k if anchor[0] == "l" else -12 * k if anchor[0] == "r" else 0), y), m.DIMS[i], font=f, anchor=anchor, fill=col)
+m.radar = radar4
 
 def render(d, s, g, o, seed, t0):
     n = int(round(d * FPS))
