@@ -115,7 +115,7 @@ def radar_shot(n, t0, mode):
             radar(im, cx, cy, R, [1] * 5, [1] * 5, pot=ease((tn - 61.84) / 2.2), active=4, k=k)
             title_txt = ("EVOLUÇÃO", min(1, i / 8))
             # legenda do gráfico
-            d = ImageDraw.Draw(im); f = font(int(26 * k)); lx, ly = W * .78, H * .40
+            d = ImageDraw.Draw(im); f = font(int(26 * k)); lx, ly = W * .84, H * .40
             d.rectangle([lx, ly, lx + 34 * k, ly + 8 * k], fill=LIME + (255,)); d.text((lx + 46 * k, ly + 4 * k), "atual", font=f, anchor="lm", fill=(235, 240, 245))
             for s in range(3): d.rectangle([lx + s * 12 * k, ly + 44 * k, lx + s * 12 * k + 7 * k, ly + 50 * k], fill=(255, 255, 255))
             d.text((lx + 46 * k, ly + 47 * k), "potencial", font=f, anchor="lm", fill=(235, 240, 245))
