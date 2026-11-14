@@ -119,6 +119,10 @@ def _kit(s):
         nm, off = KIT_VID[s[1]]; return (s[0], nm, max(0.0, s[2] - off)) + s[3:]
     return s
 SHOTS = [(t, _kit(s), g, o) for t, s, g, o in SHOTS]
+# 7 · demo de análise (1:11): gravação da demo "iScout Ao Vivo" (HTML enviado pelo Michel) rodando, capturada
+#     em Chromium a 0,25x e remontada em tempo real (out/v4/demo_v5.mp4); trecho com ações e troca de câmera
+filme_v2.DEMO = os.environ.get("DEMO_V5", filme_v2.DEMO)
+SHOTS = [(t, ("demo", 4.0), g, o) if isinstance(s, tuple) and s[0] == "demo" else (t, s, g, o) for t, s, g, o in SHOTS]
 m.SHOTS[:] = SHOTS                     # filme_v2.SHOTS é a mesma lista
 
 # 5 · tablet do técnico (1:39): dashboard desenhado em código, cobrindo o vidro inteiro (v4_tablet.py)
@@ -171,7 +175,11 @@ if __name__ == "__main__":
                 a[BY:BY + 68, BX:BX + 68] = a[BY:BY + 68, BX:BX + 68] * (1 - al) + BUGA[..., :3] * al
             p.stdin.write(np.clip(a, 0, 255).astype(np.uint8).tobytes()); f += 1
     if t_b >= SHOTS[-1][0]:
+        sig = Image.new("RGBA", (W, H), (0, 0, 0, 0))     # assinatura discreta do autor, centro inferior
+        ImageDraw.Draw(sig).text((W / 2, H - int(14 * H / 1080)), "Michel Brotherhood", font=m.font(max(11, int(15 * H / 1080))),
+                                 anchor="mb", fill=(255, 255, 255, 34))
         for im in brand(TOTAL - f, "Transformando o futuro", "do futebol de base.", "Visite iscout.tech", l2y=.735):
+            im = im.convert("RGBA"); im.alpha_composite(sig)
             a = np.asarray(im.convert("RGB")).astype(np.float32) + rng.normal(0, 3, (H, W, 1)).astype(np.float32)
             p.stdin.write(np.clip(a, 0, 255).astype(np.uint8).tobytes()); f += 1
     p.stdin.close(); p.wait()
