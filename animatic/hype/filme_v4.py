@@ -119,11 +119,42 @@ def _kit(s):
         nm, off = KIT_VID[s[1]]; return (s[0], nm, max(0.0, s[2] - off)) + s[3:]
     return s
 SHOTS = [(t, _kit(s), g, o) for t, s, g, o in SHOTS]
-# 7 · demo de análise (1:11): gravação da demo "iScout Ao Vivo" (HTML enviado pelo Michel) rodando, capturada
-#     em Chromium a 0,25x e remontada em tempo real (out/v4/demo_v5.mp4); trecho com ações e troca de câmera
-filme_v2.DEMO = os.environ.get("DEMO_V5", filme_v2.DEMO)
-SHOTS = [(t, ("demo", 4.0), g, o) if isinstance(s, tuple) and s[0] == "demo" else (t, s, g, o) for t, s, g, o in SHOTS]
+# 7 · demo de análise (1:11): a demo "iScout Ao Vivo" (HTML enviado pelo Michel) EM TELA CHEIA, exatamente como a
+#     página, por ~15,6 s. Gravada em Chromium a 0,25x e remontada em tempo real (out/v4/demo_v5.mp4, 1920x1080).
+#     O filme cresce EXT s (5 compassos da trilha a ~121 BPM) depois de "…intensidade e consistência.": tudo que
+#     vem depois (planos, legendas, assinatura) é empurrado; o áudio ganha a mesma extensão (v4_audio.py).
+DEMO_V5 = os.environ.get("DEMO_V5", "")
+EXT = 9.92                              # 5 compassos de 1,984 s
+T_CUT = T(75.8)                         # "Com o tempo," (fim original da demo)
+SHOTS = [(t + EXT, s, g, o) if t >= T_CUT - 1e-6 else (t, ("demo_full",) if isinstance(s, tuple) and s[0] == "demo" else s, g, o)
+         for t, s, g, o in SHOTS]
+for i, (end, sep, parts, *opt) in enumerate(filme_v2.CAPS):
+    if parts[0][0] >= T_CUT - filme_v2.NARR_IN - .2:
+        filme_v2.CAPS[i] = (end + EXT, sep, [(p[0] + EXT,) + tuple(p[1:]) for p in parts], *opt)
+TOTAL = TOTAL + int(round(EXT * FPS))
 m.SHOTS[:] = SHOTS                     # filme_v2.SHOTS é a mesma lista
+
+GROUND = (15, 21, 25)                   # --ground da página (#0F1519): laterais no 2.39 somem no fundo dela
+
+def demo_full(n):
+    """Página da demo em tela cheia. Abre a partir da janela da V3 (66 % da altura, borda LIME) em 0,5 s."""
+    raw = subprocess.run(["ffmpeg", "-v", "error", "-ss", "0.3", "-i", DEMO_V5, "-vf", f"fps={FPS}", "-frames:v", str(n),
+                          "-f", "rawvideo", "-pix_fmt", "rgb24", "-"], capture_output=True, check=True).stdout
+    fr = np.frombuffer(raw, np.uint8).reshape(-1, 1080, 1920, 3)
+    fh = H; fw = int(round(H * 16 / 9))   # 16:9 cheio; no 2.39 a página inteira centralizada (pillarbox)
+    out = []
+    for i in range(n):
+        f = Image.fromarray(fr[min(i, len(fr) - 1)])
+        e = L.ease(i / (FPS * .5)); s = .66 + .34 * e
+        w, h = int(fw * s), int(fh * s); x, y = (W - w) // 2, int((H - h) / 2 * e + H * .07 * (1 - e))
+        im = Image.new("RGBA", (W, H), GROUND + (255,))
+        im.paste(f.resize((w, h), Image.LANCZOS), (x, y))
+        if e < 1:
+            ov = Image.new("RGBA", (W, H), (0, 0, 0, 0))
+            ImageDraw.Draw(ov).rectangle([x - 2, y - 2, x + w + 1, y + h + 1], outline=LIME + (int(255 * (1 - e)),), width=4)
+            im.alpha_composite(ov)
+        out.append(im)
+    return out
 
 # 5 · tablet do técnico (1:39): dashboard desenhado em código, cobrindo o vidro inteiro (v4_tablet.py)
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
@@ -149,12 +180,13 @@ m.radar = radar4
 def render(d, s, g, o, seed, t0):
     n = int(round(d * FPS))
     if s[0] == "holo": return holo_shot(n, s[1], o["dim"])
+    if s[0] == "demo_full": return demo_full(n)
     return m.render(d, s, g, o, seed, t0)
 
 if __name__ == "__main__":
     yy, xx = np.mgrid[0:H, 0:W]
     VIG = np.clip(1 - 0.22 * (((xx - W / 2) / (W / 2)) ** 2 + ((yy - H / 2) / (H / 2)) ** 2), 0.6, 1)[..., None].astype(np.float32)
-    t_a = float(sys.argv[2]) if len(sys.argv) > 2 else 0; t_b = float(sys.argv[3]) if len(sys.argv) > 3 else TOTAL
+    t_a = float(sys.argv[2]) if len(sys.argv) > 2 else 0; t_b = float(sys.argv[3]) if len(sys.argv) > 3 else TOTAL / FPS
     p = subprocess.Popen(["ffmpeg", "-v", "error", "-y", "-f", "rawvideo", "-pix_fmt", "rgb24", "-s", f"{W}x{H}", "-r", str(FPS), "-i", "-",
                           "-c:v", "libx264", "-crf", "20", "-maxrate", "20M", "-bufsize", "40M", "-preset", "medium", "-pix_fmt", "yuv420p", sys.argv[1]],
                          stdin=subprocess.PIPE)
@@ -168,6 +200,8 @@ if __name__ == "__main__":
         if (t0 + d) <= t_a or t0 >= t_b: f = target; continue      # render parcial (testes)
         frs = render(target / FPS - f / FPS, s, g, o, 1 + 37 * k, f / FPS) if s[0] != "field" else filme_v2.render(d, s, g, o, 1)
         for im in frs[:target - f] + [frs[-1]] * max(0, target - f - len(frs)):
+            if s[0] == "demo_full":     # a página exatamente como é: sem legenda, degradê, vinheta, grão ou ícone
+                p.stdin.write(np.asarray(im.convert("RGB")).tobytes()); f += 1; continue
             im = im.convert("RGBA"); m.caption(im, f / FPS)
             a = np.asarray(im.convert("RGB")).astype(np.float32) * VIG + rng.normal(0, 3, (H, W, 1)).astype(np.float32)
             if 48 <= f < BRAND_AT and not o.get("hud") and s[0] not in ("radar", "holo"):
@@ -175,11 +209,7 @@ if __name__ == "__main__":
                 a[BY:BY + 68, BX:BX + 68] = a[BY:BY + 68, BX:BX + 68] * (1 - al) + BUGA[..., :3] * al
             p.stdin.write(np.clip(a, 0, 255).astype(np.uint8).tobytes()); f += 1
     if t_b >= SHOTS[-1][0]:
-        sig = Image.new("RGBA", (W, H), (0, 0, 0, 0))     # assinatura discreta do autor, centro inferior
-        ImageDraw.Draw(sig).text((W / 2, H - int(14 * H / 1080)), "Michel Brotherhood", font=m.font(max(11, int(15 * H / 1080))),
-                                 anchor="mb", fill=(255, 255, 255, 34))
         for im in brand(TOTAL - f, "Transformando o futuro", "do futebol de base.", "Visite iscout.tech", l2y=.735):
-            im = im.convert("RGBA"); im.alpha_composite(sig)
             a = np.asarray(im.convert("RGB")).astype(np.float32) + rng.normal(0, 3, (H, W, 1)).astype(np.float32)
             p.stdin.write(np.clip(a, 0, 255).astype(np.uint8).tobytes()); f += 1
     p.stdin.close(); p.wait()
