@@ -6,7 +6,8 @@ crossfade de 80 ms. Opcionalmente atrasa o início (pad) para casar o fim da mú
 Locução: narr3.wav (entra em 0,8 s) com a pausa de EXT s da demo inserida em 76,45 s (como v4_audio.py).
 Mix igual aos cortes: trilha a -18,2 LUFS antes do duck, sidechain sob a voz, loudnorm -14,3 LUFS.
 
-Uso: python3 v4_musica_full.py <musica.wav> <narr3.wav> <J_s> <L_alvo_s> <pad_s> <saida.wav>
+Uso: python3 v4_musica_full.py <musica.wav> <narr3.wav> <J_s> <L_alvo_s> <pad_s> <saida.wav> [skip_s]
+     skip_s: ponto da faixa em que a música entra no filme (ex.: 83,3 = mesma entrada do pocket aprovado)
 """
 import subprocess, sys
 import numpy as np
@@ -28,19 +29,20 @@ def find_loop(m, J, L0, span=.25, win=3.0):
         if best is None or c > best[0]: best = (c, Ls)
     return best
 
-def main(mus, narr, J, L0, pad, out):
-    J, L0, pad = float(J), float(L0), float(pad)
+def main(mus, narr, J, L0, pad, out, skip=0):
+    J, L0, pad, skip = float(J), float(L0), float(pad), float(skip)
     m = read(mus)
     c, L = find_loop(m, J, L0)
     print(f"loop: J={J:.2f}s L={L:.4f}s corr={c:.3f}")
     j, l, xf = int(J * SR), int(L * SR), int(.08 * SR)
     w = np.linspace(0, 1, xf, dtype=np.float32)[:, None]
-    head, tail = m[:j].copy(), m[j - l:].copy()
+    head, tail = m[int(skip * SR):j].copy(), m[j - l:].copy()
     tail[:xf] = head[-xf:] * (1 - w) + tail[:xf] * w
     bed = np.concatenate([np.zeros((int(pad * SR), 2), np.float32), head[:-xf], tail])
     n = int(FILM * SR)
     bed = bed[:n] if len(bed) >= n else np.concatenate([bed, np.zeros((n - len(bed), 2), np.float32)])
     fo = int(1.2 * SR); bed[-fo:] *= np.linspace(1, 0, fo, dtype=np.float32)[:, None]
+    fi = int(.3 * SR); bed[:fi] *= np.linspace(0, 1, fi, dtype=np.float32)[:, None]     # mesmo fade-in do pocket
     # locução na timeline de 2:17 (pausa da demo inserida)
     v = read(narr, ac=1)[:, 0]
     v = np.concatenate([np.zeros(int(NARR_IN * SR), np.float32), v])
@@ -63,4 +65,4 @@ def main(mus, narr, J, L0, pad, out):
     print(f"trilha {I:.1f} LUFS -> ganho {gain:+.1f} dB; saída {out}")
 
 if __name__ == "__main__":
-    main(*sys.argv[1:7])
+    main(*sys.argv[1:8])
