@@ -12,7 +12,9 @@ VID, NARR, MUS, START, GAIN, OUT = sys.argv[1:7]
 START, GAIN = float(START), float(GAIN)
 FADE_IN = float(sys.argv[7]) if len(sys.argv) > 7 else 0.4      # 0,05 = começa "seco" no ponto pedido, só sem clique
 NARR_IN = 0.8
-SEGS = [(0.0, 3.1), (10.75, 15.55), (40.85, 46.65), (112.3, 118.6), (118.6, 127.5)]   # corte de 30 s (cortes_v3.py)
+import os
+SEGS = {"30": [(0.0, 3.1), (10.75, 15.55), (40.85, 46.65), (112.3, 118.6), (118.6, 127.5)],     # cortes_v3.py
+        "15": [(0.0, 3.1), (13.2, 15.55), (118.6, 127.5)]}[os.environ.get("CUT", "30")]
 dur = sum(b - a for a, b in SEGS)
 
 vf = "".join(f"[0:v]trim={a}:{b},setpts=PTS-STARTPTS[v{i}];" for i, (a, b) in enumerate(SEGS))
