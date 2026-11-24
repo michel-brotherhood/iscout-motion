@@ -141,6 +141,7 @@ def demo_full(n):
     raw = subprocess.run(["ffmpeg", "-v", "error", "-ss", "0.3", "-i", DEMO_V5, "-vf", f"fps={FPS}", "-frames:v", str(n),
                           "-f", "rawvideo", "-pix_fmt", "rgb24", "-"], capture_output=True, check=True).stdout
     fr = np.frombuffer(raw, np.uint8).reshape(-1, 1080, 1920, 3)
+    GROUND = tuple(int(v) for v in fr[0, 540, 2])   # fundo da própria página (laterais do 2.39 somem nele)
     fh = H; fw = int(round(H * 16 / 9))   # 16:9 cheio; no 2.39 a página inteira centralizada (pillarbox)
     out = []
     for i in range(n):
