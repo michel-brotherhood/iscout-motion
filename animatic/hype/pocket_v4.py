@@ -10,12 +10,13 @@ Trechos (tempo de filme da V4 2:17), sempre em fronteira de frase da locução:
 A música toca contínua (sem emendas) de START até o fim do pocket. O START é escolhido para o final natural da faixa
 cair na assinatura. Ganho casado em -18,2 LUFS antes do duck, sidechain sob a voz e loudnorm -14,3 LUFS.
 
-Uso: python3 pocket_v4.py <video V4 2:17 sem áudio> <voz 2:17 (wav)> <musica> <inicio_s> <saida.mp4>
+Uso: python3 pocket_v4.py <video V4 2:17 sem áudio> <voz 2:17 (wav)> <musica> <inicio_s> <saida.mp4> [cresc_s]
+     cresc_s: crescendo da música na abertura (curva exponencial); padrão 0,3 s
 """
 import subprocess, sys
 
 VID, VOZ, MUS, START, OUT = sys.argv[1:6]
-START = float(START)
+START = float(START); CRESC = float(sys.argv[6]) if len(sys.argv) > 6 else .3
 SEGS = [(0.0, 3.1), (10.75, 15.55), (40.85, 46.65), (70.96, 86.52), (122.22, 128.52), (128.52, 137.4167)]
 dur = sum(b - a for a, b in SEGS)
 
@@ -31,7 +32,7 @@ fc += "".join(f"[n{i}]atrim={a}:{b},asetpts=PTS-STARTPTS,afade=t=in:d=0.015,afad
 fc += "".join(f"[v{i}]" for i in range(k)) + f"concat=n={k}:v=1:a=0[v];"
 fc += "".join(f"[a{i}]" for i in range(k)) + f"concat=n={k}:v=0:a=1[nar];"
 fc += (f"[2:a]aresample=48000,atrim=start={START}:end={START + dur},asetpts=PTS-STARTPTS,volume={gain:.2f}dB,"
-       f"afade=t=in:d=0.3,afade=t=out:st={dur-1.2}:d=1.2[m];"
+       f"afade=t=in:d={CRESC}:curve=exp,afade=t=out:st={dur-1.2}:d=1.2[m];"
        "[nar]asplit=2[n][sc];[m][sc]sidechaincompress=threshold=0.03:ratio=4:attack=30:release=450:makeup=1[md];"
        "[md][n]amix=inputs=2:normalize=0:duration=first,loudnorm=I=-14.3:TP=-2:LRA=11,aresample=48000,alimiter=limit=0.8:level=false[o]")
 subprocess.run(["ffmpeg", "-v", "error", "-y", "-i", VID, "-i", VOZ, "-i", MUS, "-filter_complex", fc, "-map", "[v]", "-map", "[o]",
