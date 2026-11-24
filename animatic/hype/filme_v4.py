@@ -132,9 +132,8 @@ for i, (end, sep, parts, *opt) in enumerate(filme_v2.CAPS):
     if parts[0][0] >= T_CUT - filme_v2.NARR_IN - .2:
         filme_v2.CAPS[i] = (end + EXT, sep, [(p[0] + EXT,) + tuple(p[1:]) for p in parts], *opt)
 TOTAL = TOTAL + int(round(EXT * FPS))
-# frase nova sobre a demo (feedback 24/11: 10 s sem locução parecia "glitch"), mesma voz, em 78,2 s do filme
-LINHA_DEMO = (84.9, " · ", [(77.4, "EM TEMPO REAL"), (80.02, "CADA AÇÃO"), (81.64, "CADA ATLETA"), (83.48, "A MELHOR CÂMERA")])
-filme_v2.CAPS.append(LINHA_DEMO); filme_v2.CAPS.sort(key=lambda c: c[2][0][0])
+# frase nova sobre a demo (feedback 24/11: 10 s sem locução parecia "glitch"), mesma voz, em 78,2 s do filme:
+# só na voz (a legenda por cima da página atrapalhava a leitura dos cartões da demo)
 m.SHOTS[:] = SHOTS                     # filme_v2.SHOTS é a mesma lista
 
 GROUND = (15, 21, 25)                   # --ground da página (#0F1519): laterais no 2.39 somem no fundo dela
@@ -204,10 +203,7 @@ if __name__ == "__main__":
         if (t0 + d) <= t_a or t0 >= t_b: f = target; continue      # render parcial (testes)
         frs = render(target / FPS - f / FPS, s, g, o, 1 + 37 * k, f / FPS) if s[0] != "field" else filme_v2.render(d, s, g, o, 1)
         for im in frs[:target - f] + [frs[-1]] * max(0, target - f - len(frs)):
-            if s[0] == "demo_full":     # a página como é: sem degradê, vinheta, grão ou ícone; só a legenda da frase nova
-                tn = f / FPS - filme_v2.NARR_IN
-                if LINHA_DEMO[2][0][0] - .05 <= tn < LINHA_DEMO[0]:
-                    im = im.convert("RGBA"); filme_v2.caption(im, f / FPS)
+            if s[0] == "demo_full":     # a página exatamente como é: sem legenda, degradê, vinheta, grão ou ícone
                 p.stdin.write(np.asarray(im.convert("RGB")).tobytes()); f += 1; continue
             im = im.convert("RGBA"); m.caption(im, f / FPS)
             a = np.asarray(im.convert("RGB")).astype(np.float32) * VIG + rng.normal(0, 3, (H, W, 1)).astype(np.float32)
